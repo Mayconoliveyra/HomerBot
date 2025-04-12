@@ -9,4 +9,6 @@ const router = Router();
 
 router.get('/teste-api', (req, res) => res.status(StatusCodes.OK).json('API TESTADA!.'));
 
+router.get('/empresa', Controladores.Empresa.consultarValidacao, Controladores.Empresa.consultar);
+
 export { router };
