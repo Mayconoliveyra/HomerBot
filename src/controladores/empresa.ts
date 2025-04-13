@@ -10,6 +10,8 @@ interface IQueryProps {
   pagina?: number;
   limite?: number;
   filtro?: string;
+  ordenarPor?: string;
+  ordem?: string;
 }
 
 const consultarValidacao = Middlewares.validacao((getSchema) => ({
@@ -18,14 +20,16 @@ const consultarValidacao = Middlewares.validacao((getSchema) => ({
       pagina: yup.number().integer().moreThan(0).default(1),
       limite: yup.number().integer().moreThan(0).max(500).default(10),
       filtro: yup.string().max(255).optional(),
+      ordenarPor: yup.string().max(100).optional().default('nome'),
+      ordem: yup.string().max(100).optional().default('asc'),
     }),
   ),
 }));
 
 const consultar = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) => {
-  const { pagina = 1, limite = 10, filtro = '' } = req.query;
+  const { pagina = 1, limite = 10, filtro = '', ordenarPor = 'nome', ordem = 'asc' } = req.query;
 
-  const result = await Repositorios.Empresa.consultar(pagina, limite, filtro);
+  const result = await Repositorios.Empresa.consultar(pagina, limite, filtro, ordenarPor, ordem);
 
   if (result === false) {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({

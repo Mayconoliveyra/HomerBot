@@ -4,29 +4,37 @@ import { IEmpresa } from '../banco/models/empresa';
 
 import { Util } from '../util';
 
-const consultar = async (pagina: number, limite: number, filtro: string) => {
+const consultar = async (pagina: number, limite: number, filtro: string, ordenarPor: string, ordem: string) => {
   try {
     const offset = (pagina - 1) * limite;
 
-    // Query de dados
+    // Valida se a coluna existe de fato na tabela
+    const colunaOrdem = ordem && ordem.toLowerCase() === 'desc' ? 'desc' : 'asc';
+
+    const colunasTabela = await Knex(ETableNames.empresas).columnInfo();
+    const nomesColunas = Object.keys(colunasTabela);
+    const colunaOrdenada = nomesColunas.includes(ordenarPor) ? ordenarPor : 'nome';
+
+    // Dados
     const empresas = await Knex(ETableNames.empresas)
       .select('*')
       .modify((queryBuilder) => {
         if (filtro) {
           queryBuilder.where((qb) => {
-            qb.where('fantasia', 'like', `%${filtro}%`).orWhere('registro', 'like', `%${filtro}%`).orWhere('cnpj_cpf', 'like', `%${filtro}%`);
+            qb.where('nome', 'like', `%${filtro}%`).orWhere('registro', 'like', `%${filtro}%`).orWhere('cnpj_cpf', 'like', `%${filtro}%`);
           });
         }
       })
+      .orderBy(colunaOrdenada, colunaOrdem)
       .limit(limite)
       .offset(offset);
 
-    // Query de total
+    // Total registros
     const countResult = await Knex(ETableNames.empresas)
       .modify((queryBuilder) => {
         if (filtro) {
           queryBuilder.where((qb) => {
-            qb.where('fantasia', 'like', `%${filtro}%`).orWhere('registro', 'like', `%${filtro}%`).orWhere('cnpj_cpf', 'like', `%${filtro}%`);
+            qb.where('nome', 'like', `%${filtro}%`).orWhere('registro', 'like', `%${filtro}%`).orWhere('cnpj_cpf', 'like', `%${filtro}%`);
           });
         }
       })
