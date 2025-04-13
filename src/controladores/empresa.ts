@@ -55,9 +55,11 @@ const consultar = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) =
 };
 
 const isCpfOrCnpj = (valor: string): boolean => {
-  const cpf = /^\d{3}\.\d{3}\.\d{3}-\d{2}$|^\d{11}$/;
-  const cnpj = /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$|^\d{14}$/;
-  return cpf.test(valor) || cnpj.test(valor);
+  if (!valor) return false;
+
+  const onlyNumbers = valor.replace(/\D/g, '');
+
+  return onlyNumbers.length === 11 || onlyNumbers.length === 14;
 };
 
 const cadastrarValidacao = Middlewares.validacao((getSchema) => ({
