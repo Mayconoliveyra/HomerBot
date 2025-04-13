@@ -2,6 +2,8 @@ import { ETableNames } from '../banco/eTableNames';
 import { Knex } from '../banco/knex';
 import { IEmpresa } from '../banco/models/empresa';
 
+import { IBodyCadastrarProps } from '../controladores/empresa';
+
 import { Util } from '../util';
 
 const consultar = async (pagina: number, limite: number, filtro: string, ordenarPor: string, ordem: string) => {
@@ -65,4 +67,24 @@ const atualizarDadosSelfHost = async (empresaId: number, data: Partial<IEmpresa>
   }
 };
 
-export const Empresa = { consultar, buscarPorId, atualizarDadosSelfHost };
+const buscarPorRegistroOuDocumento = async (registro: string, cnpj_cpf: string): Promise<IEmpresa | undefined> => {
+  try {
+    const result = await Knex(ETableNames.empresas).where('registro', registro).orWhere('cnpj_cpf', cnpj_cpf).first();
+
+    return result;
+  } catch (error) {
+    Util.Log.error('Erro ao verificar empresa existente', error);
+    return undefined;
+  }
+};
+
+const cadastrar = async (empresa: IBodyCadastrarProps) => {
+  try {
+    return await Knex(ETableNames.empresas).insert(empresa);
+  } catch (error) {
+    Util.Log.error('Erro ao cadastrar empresa', error);
+    return false;
+  }
+};
+
+export const Empresa = { consultar, buscarPorId, atualizarDadosSelfHost, buscarPorRegistroOuDocumento, cadastrar };

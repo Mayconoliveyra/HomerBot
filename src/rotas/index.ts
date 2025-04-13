@@ -10,5 +10,6 @@ const router = Router();
 router.get('/teste-api', (req, res) => res.status(StatusCodes.OK).json('API TESTADA!.'));
 
 router.get('/empresa', Controladores.Empresa.consultarValidacao, Controladores.Empresa.consultar);
+router.post('/empresa', Controladores.Empresa.cadastrarValidacao, Controladores.Empresa.cadastrar);
 
 export { router };

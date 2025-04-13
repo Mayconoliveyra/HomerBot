@@ -17,6 +17,7 @@ const validacao: TValidacao = (getAllSchemas) => async (req, res, next) => {
   const schemas = getAllSchemas((schema) => schema);
 
   const errorsResult: Record<string, Record<string, string>> = {};
+  const flatErrorsArray: string[] = [];
 
   Object.entries(schemas).forEach(([key, schema]) => {
     try {
@@ -27,17 +28,25 @@ const validacao: TValidacao = (getAllSchemas) => async (req, res, next) => {
 
       yupError.inner.forEach((error) => {
         if (error.path === undefined) return;
-        errors[error.path] = error.message;
+        const message = error.message;
+        errors[error.path] = message;
+        flatErrorsArray.push(`${error.path}: ${message}`);
       });
 
       errorsResult[key] = errors;
     }
   });
 
-  if (Object.entries(errorsResult).length === 0) {
+  if (flatErrorsArray.length === 0) {
     return next();
   } else {
-    return res.status(StatusCodes.BAD_REQUEST).json({ errors: errorsResult });
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      errors: {
+        fields: errorsResult,
+        messages: flatErrorsArray,
+        default: flatErrorsArray.join('; '),
+      },
+    });
   }
 };
 
