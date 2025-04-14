@@ -18,6 +18,7 @@ const validacao: TValidacao = (getAllSchemas) => async (req, res, next) => {
 
   const errorsResult: Record<string, Record<string, string>> = {};
   const flatErrorsArray: string[] = [];
+  const flatErrorsArrayString: string[] = [];
 
   Object.entries(schemas).forEach(([key, schema]) => {
     try {
@@ -31,6 +32,7 @@ const validacao: TValidacao = (getAllSchemas) => async (req, res, next) => {
         const message = error.message;
         errors[error.path] = message;
         flatErrorsArray.push(`${error.path}: ${message}`);
+        flatErrorsArrayString.push(`${error.path.toUpperCase()}: ${message}`);
       });
 
       errorsResult[key] = errors;
@@ -44,7 +46,7 @@ const validacao: TValidacao = (getAllSchemas) => async (req, res, next) => {
       errors: {
         fields: errorsResult,
         messages: flatErrorsArray,
-        default: flatErrorsArray.join('; '),
+        default: flatErrorsArrayString.join('; '),
       },
     });
   }

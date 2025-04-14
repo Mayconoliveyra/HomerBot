@@ -79,9 +79,15 @@ const cadastrar = async (req: Request<{}, {}, IBodyCadastrarProps>, res: Respons
   const { registro, nome, cnpj_cpf } = req.body;
 
   const existe = await Repositorios.Empresa.buscarPorRegistroOuDocumento(registro, cnpj_cpf);
-  if (existe) {
+  if (existe && existe.registro == registro) {
     return res.status(StatusCodes.BAD_REQUEST).json({
-      errors: { default: 'Já existe uma empresa com este registro ou CNPJ/CPF.' },
+      errors: { default: 'Já existe uma empresa com este registro.' },
+    });
+  }
+
+  if (existe && existe.cnpj_cpf == cnpj_cpf) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      errors: { default: 'Já existe uma empresa com este CNPJ/CPF.' },
     });
   }
 
