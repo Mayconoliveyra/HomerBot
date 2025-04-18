@@ -34,6 +34,14 @@ const consultarValidacao = Middlewares.validacao((getSchema) => ({
   ),
 }));
 
+const consultarPorIdValidacao = Middlewares.validacao((getSchema) => ({
+  params: getSchema<{ empresaId: number }>(
+    yup.object().shape({
+      empresaId: yup.number().integer().required(),
+    }),
+  ),
+}));
+
 const consultar = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) => {
   const { pagina = 1, limite = 10, filtro = '', ordenarPor = 'nome', ordem = 'asc' } = req.query;
 
@@ -52,6 +60,17 @@ const consultar = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) =
     totalRegistros: result.total,
     totalPaginas: totalPaginas,
   });
+};
+
+const consultarPorId = async (req: Request<{ empresaId: string }>, res: Response) => {
+  const empresaId = req.params.empresaId as unknown as number;
+
+  const empresa = await Repositorios.Empresa.buscarPorId(empresaId);
+  if (!empresa) {
+    return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: 'Empresa não encontrada.' } });
+  }
+
+  return res.status(StatusCodes.OK).json(empresa);
 };
 
 const isCpfOrCnpj = (valor: string): boolean => {
@@ -105,6 +124,8 @@ const cadastrar = async (req: Request<{}, {}, IBodyCadastrarProps>, res: Respons
 export const Empresa = {
   consultarValidacao,
   consultar,
+  consultarPorIdValidacao,
+  consultarPorId,
   cadastrarValidacao,
   cadastrar,
 };

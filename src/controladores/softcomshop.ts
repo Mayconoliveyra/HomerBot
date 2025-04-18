@@ -28,7 +28,7 @@ const limparConfigSS = async (id: number) => {
   });
 };
 
-const criarDispositivoValidacao = Middlewares.validacao((getSchema) => ({
+const configuracaoValidacao = Middlewares.validacao((getSchema) => ({
   body: getSchema<IBodyProps>(
     yup.object().shape({
       empresa_id: yup.number().required(),
@@ -37,13 +37,40 @@ const criarDispositivoValidacao = Middlewares.validacao((getSchema) => ({
   ),
 }));
 
-const criarDispositivo = async (req: Request<{}, {}, IBodyProps>, res: Response) => {
+const configuracao = async (req: Request<{}, {}, IBodyProps>, res: Response) => {
   const { empresa_id, erp_url } = req.body;
 
   const empresa = await Repositorios.Empresa.buscarPorId(empresa_id);
 
   if (!empresa) {
     return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: 'Empresa não encontrada.' } });
+  }
+
+  if (erp_url === empresa.ss_qrcode_url && empresa.ss_client_id && empresa.ss_client_secret) {
+    const resToken = await Servicos.SoftcomShop.criarToken(empresa.ss_client_id, empresa.ss_client_secret);
+
+    if (!resToken.sucesso || !resToken.dados) {
+      await limparConfigSS(empresa_id);
+
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        errors: { default: resToken.erro || Util.Msg.erroInesperado },
+      });
+    }
+
+    const resAtDados = await Repositorios.Empresa.atualizarDados(empresa_id, {
+      ss_token: resToken.dados.token,
+      ss_token_exp: resToken.dados.expires_in,
+    });
+
+    if (!resAtDados) {
+      await limparConfigSS(empresa_id);
+
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        errors: { default: Util.Msg.erroInesperado },
+      });
+    }
+
+    return res.status(StatusCodes.NO_CONTENT).send();
   }
 
   const resDispositivo = await Servicos.SoftcomShop.criarDispositivo(erp_url);
@@ -78,6 +105,8 @@ const criarDispositivo = async (req: Request<{}, {}, IBodyProps>, res: Response)
   });
 
   if (!resAtDados) {
+    await limparConfigSS(empresa_id);
+
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       errors: { default: Util.Msg.erroInesperado },
     });
@@ -87,6 +116,6 @@ const criarDispositivo = async (req: Request<{}, {}, IBodyProps>, res: Response)
 };
 
 export const SoftcomShop = {
-  criarDispositivoValidacao,
-  criarDispositivo,
+  configuracaoValidacao,
+  configuracao,
 };
