@@ -11,5 +11,6 @@ router.get('/teste-api', (req, res) => res.status(StatusCodes.OK).json('API TEST
 
 router.get('/empresa', Controladores.Empresa.consultarValidacao, Controladores.Empresa.consultar);
 router.post('/empresa', Controladores.Empresa.cadastrarValidacao, Controladores.Empresa.cadastrar);
+router.post('/configuracoes/softcomshop-teste', Controladores.SoftcomShop.criarDispositivoValidacao, Controladores.SoftcomShop.criarDispositivo);
 
 export { router };

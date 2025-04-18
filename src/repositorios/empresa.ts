@@ -6,6 +6,17 @@ import { IBodyCadastrarProps } from '../controladores/empresa';
 
 import { Util } from '../util';
 
+const atualizarDados = async (empresaId: number, data: Partial<IEmpresa>) => {
+  try {
+    return await Knex(ETableNames.empresas)
+      .where('id', '=', empresaId)
+      .update({ ...data });
+  } catch (error) {
+    Util.Log.error('Erro ao atualizar dados da empresa', error);
+    return false;
+  }
+};
+
 const consultar = async (pagina: number, limite: number, filtro: string, ordenarPor: string, ordem: string) => {
   try {
     const offset = (pagina - 1) * limite;
@@ -56,17 +67,6 @@ const buscarPorId = async (empresaId: number) => {
   return await Knex(ETableNames.empresas).where('id', '=', empresaId).first();
 };
 
-const atualizarDadosSelfHost = async (empresaId: number, data: Partial<IEmpresa>) => {
-  try {
-    return await Knex(ETableNames.empresas)
-      .where('id', '=', empresaId)
-      .update({ ...data });
-  } catch (error) {
-    Util.Log.error('Erro ao atualizar dados selfhost da empresa', error);
-    return false;
-  }
-};
-
 const buscarPorRegistroOuDocumento = async (registro: string, cnpj_cpf: string): Promise<IEmpresa | undefined> => {
   try {
     const result = await Knex(ETableNames.empresas).where('registro', registro).orWhere('cnpj_cpf', cnpj_cpf).first();
@@ -87,4 +87,4 @@ const cadastrar = async (empresa: IBodyCadastrarProps) => {
   }
 };
 
-export const Empresa = { consultar, buscarPorId, atualizarDadosSelfHost, buscarPorRegistroOuDocumento, cadastrar };
+export const Empresa = { consultar, buscarPorId, atualizarDados, buscarPorRegistroOuDocumento, cadastrar };
