@@ -1,5 +1,5 @@
 import { Axios } from '../servicos/axios';
-import { IAutenticacao, IMCAutenticacaoResponse, IMCErroValidacao, IMCGetEmpresa, IMCGetUsuario } from '../servicos/types/meuCarrinho';
+import { IAutenticar, IGetEmpresa, IGetUsuario, IMCAutenticar, IMCErroValidacao, IMCGetEmpresa, IMCGetUsuario } from '../servicos/types/meuCarrinho';
 import { IRetornoServico } from '../servicos/types/padroes';
 
 import { Util } from '../util';
@@ -29,9 +29,9 @@ const formatarErroValidacao = (erro: any): string => {
   }
 };
 
-const autenticar = async (usuario: string, senha: string): Promise<IRetornoServico<IAutenticacao>> => {
+const autenticar = async (usuario: string, senha: string): Promise<IRetornoServico<IAutenticar>> => {
   try {
-    const response = await Axios.defaultAxios.post<IMCAutenticacaoResponse>(`${BASE_URL_MC}/auth/token`, {
+    const response = await Axios.defaultAxios.post<IMCAutenticar>(`${BASE_URL_MC}/auth/token`, {
       username: usuario,
       password: senha,
     });
@@ -61,7 +61,7 @@ const autenticar = async (usuario: string, senha: string): Promise<IRetornoServi
   }
 };
 
-const getUsuario = async (token: string): Promise<IRetornoServico<{ merchantId: string }>> => {
+const getUsuario = async (token: string): Promise<IRetornoServico<IGetUsuario>> => {
   try {
     const response = await Axios.defaultAxios.get<IMCGetUsuario>(`${BASE_URL_MC}/auth/user`, {
       headers: {
@@ -90,7 +90,7 @@ const getUsuario = async (token: string): Promise<IRetornoServico<{ merchantId: 
   }
 };
 
-const getEmpresa = async (token: string, merchantId: string): Promise<IRetornoServico<{ nome: string; cnpj: string }>> => {
+const getEmpresa = async (token: string, merchantId: string): Promise<IRetornoServico<IGetEmpresa>> => {
   try {
     const response = await Axios.defaultAxios.get<IMCGetEmpresa>(`${BASE_URL_MC}/merchants/${merchantId}`, {
       headers: {

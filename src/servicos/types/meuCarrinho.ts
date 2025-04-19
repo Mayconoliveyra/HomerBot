@@ -1,4 +1,4 @@
-export interface IMCAutenticacaoResponse {
+export interface IMCAutenticar {
   authenticated: boolean;
   message: string;
   token: string;
@@ -143,7 +143,16 @@ export interface IMCGetEmpresa {
   }[];
 }
 
-export interface IAutenticacao {
+export interface IAutenticar {
   token: string;
   expiresAt: number;
+}
+
+export interface IGetUsuario {
+  merchantId: string;
+}
+
+export interface IGetEmpresa {
+  nome: string;
+  cnpj: string;
 }
