@@ -123,14 +123,7 @@ const teste = async (req: Request, res: Response) => {
     description: '987',
   }); */
 
-  const teste = await Servicos.MeuCarrinho.ordenarVariacaoCabecalho(
-    empresa_id,
-    '29bc73f8-73cb-4300-bda2-a6a8b6555fd6',
-    '8fc6e50e-5377-450c-83b8-4d07d3c1e684',
-    1,
-  );
-
-  console.log('teste', teste);
+  console.log('aaa');
 
   return res.status(StatusCodes.NO_CONTENT).send();
 };

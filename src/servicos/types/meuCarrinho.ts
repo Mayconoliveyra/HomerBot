@@ -121,7 +121,7 @@ export interface IMCGetEmpresa {
     number: number;
   };
 
-  availability: any[]; // Defina melhor se tiver estrutura
+  availability: 'AVAILABLE' | 'UNAVAILABLE';
 
   deliveryMethods: {
     id: string;
@@ -149,7 +149,7 @@ export interface IMCGetCategorias {
   code: string;
   name: string;
   priority: number;
-  availability: string;
+  availability: 'AVAILABLE' | 'UNAVAILABLE';
   byIntegration: boolean;
   products: [];
 }
@@ -164,8 +164,8 @@ export interface IMCGetProdutos {
   name: string;
   description: string;
   price: number;
-  availability: string;
-  availabilityOrigin: string;
+  availability: 'AVAILABLE' | 'UNAVAILABLE';
+  availabilityOrigin: 'AVAILABLE' | 'UNAVAILABLE';
   measure: string;
   merchantSuggestion: boolean;
   byIntegration: boolean;
@@ -204,8 +204,8 @@ export interface IMCGetProdutoPorId {
   name: string;
   description: string;
   price: number;
-  availability: string;
-  availabilityOrigin: string;
+  availability: 'AVAILABLE' | 'UNAVAILABLE';
+  availabilityOrigin: 'AVAILABLE' | 'UNAVAILABLE';
   measure: string;
   merchantSuggestion: boolean;
   byIntegration: boolean;
@@ -240,7 +240,7 @@ export interface IMCGetProdutoPorId {
     itemsMax: number;
     colorHex: string | null;
     priority: number;
-    availability: string;
+    availability: 'AVAILABLE' | 'UNAVAILABLE';
     calcType: string;
     items: {
       variationId: string;
@@ -251,7 +251,7 @@ export interface IMCGetProdutoPorId {
       description: string;
       value: number;
       colorHex: string | null;
-      availability: string;
+      availability: 'AVAILABLE' | 'UNAVAILABLE';
       priority: number;
       stock: {
         active: boolean;
@@ -300,7 +300,7 @@ export interface IMCCriarVariacaoCabecalhoResponse {
   itemsMax: number;
   colorHex: string | null;
   priority: number;
-  availability: string;
+  availability: 'AVAILABLE' | 'UNAVAILABLE';
   calcType: string;
   items: [];
 }
@@ -321,7 +321,7 @@ export interface IMCCriarVariacaoItemResponse {
   description: string;
   value: number;
   colorHex: string | null;
-  availability: string;
+  availability: 'AVAILABLE' | 'UNAVAILABLE';
   priority: number;
   stock: {
     active: boolean;
