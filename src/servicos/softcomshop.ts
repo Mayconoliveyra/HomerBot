@@ -95,9 +95,13 @@ const criarToken = async (client_id: string, client_secret: string): Promise<IRe
       };
     }
 
+    const expiresInApi = response.data.data.expires_in; // 86400
+    // Expira localmente com 3h de antecedência
+    const expiresAt = Math.floor(Date.now() / 1000) + (expiresInApi - 3 * 60 * 60);
+
     const dadosFormat = {
       token: response.data.data.token,
-      expires_in: response.data.data.expires_in,
+      expiresAt: expiresAt,
     };
 
     return {

@@ -82,5 +82,5 @@ export interface ICriarDispositivo {
 
 export interface ICriarToken {
   token: string;
-  expires_in: number;
+  expiresAt: number;
 }

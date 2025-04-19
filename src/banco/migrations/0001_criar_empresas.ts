@@ -22,6 +22,14 @@ export async function up(knex: Knex) {
       table.text('ss_token');
       table.bigInteger('ss_token_exp').notNullable().defaultTo(0);
 
+      table.string('mc_usuario', 255);
+      table.string('mc_senha', 255);
+      table.string('mc_empresa_id', 255);
+      table.string('mc_empresa_nome', 255);
+      table.string('mc_empresa_cnpj', 255);
+      table.text('mc_token');
+      table.bigInteger('mc_token_exp').notNullable().defaultTo(0);
+
       table.text('sh_qrcode_url');
       table.string('sh_url', 255);
       table.string('sh_client_id', 255);

@@ -52,20 +52,20 @@ const configuracao = async (req: Request<{}, {}, IBodyProps>, res: Response) => 
     if (!resToken.sucesso || !resToken.dados) {
       await limparConfigSS(empresa_id);
 
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      return res.status(StatusCodes.BAD_REQUEST).json({
         errors: { default: resToken.erro || Util.Msg.erroInesperado },
       });
     }
 
     const resAtDados = await Repositorios.Empresa.atualizarDados(empresa_id, {
       ss_token: resToken.dados.token,
-      ss_token_exp: resToken.dados.expires_in,
+      ss_token_exp: resToken.dados.expiresAt,
     });
 
     if (!resAtDados) {
       await limparConfigSS(empresa_id);
 
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      return res.status(StatusCodes.BAD_REQUEST).json({
         errors: { default: Util.Msg.erroInesperado },
       });
     }
@@ -88,7 +88,7 @@ const configuracao = async (req: Request<{}, {}, IBodyProps>, res: Response) => 
   if (!resToken.sucesso || !resToken.dados) {
     await limparConfigSS(empresa_id);
 
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+    return res.status(StatusCodes.BAD_REQUEST).json({
       errors: { default: resToken.erro || Util.Msg.erroInesperado },
     });
   }
@@ -101,7 +101,7 @@ const configuracao = async (req: Request<{}, {}, IBodyProps>, res: Response) => 
     ss_empresa_cnpj: resDispositivo.dados.empresa_cnpj,
     ss_empresa_nome: resDispositivo.dados.empresa_fantasia,
     ss_token: resToken.dados.token,
-    ss_token_exp: resToken.dados.expires_in,
+    ss_token_exp: resToken.dados.expiresAt,
   });
 
   if (!resAtDados) {

@@ -10,9 +10,10 @@ const router = Router();
 router.get('/teste-api', (req, res) => res.status(StatusCodes.OK).json('API TESTADA!.'));
 
 router.get('/empresa', Controladores.Empresa.consultarValidacao, Controladores.Empresa.consultar);
+router.post('/empresa', Controladores.Empresa.cadastrarValidacao, Controladores.Empresa.cadastrar);
 router.get('/empresa/:empresaId', Controladores.Empresa.consultarPorIdValidacao, Controladores.Empresa.consultarPorId);
 
-router.post('/empresa', Controladores.Empresa.cadastrarValidacao, Controladores.Empresa.cadastrar);
 router.post('/configuracoes/softcomshop', Controladores.SoftcomShop.configuracaoValidacao, Controladores.SoftcomShop.configuracao);
+router.post('/configuracoes/meu-carrinho', Controladores.MeuCarrinho.configuracaoValidacao, Controladores.MeuCarrinho.configuracao);
 
 export { router };
