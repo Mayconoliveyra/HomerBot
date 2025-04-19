@@ -7,7 +7,7 @@ export interface ISSResponseBase<T = any> {
   date_sync?: number;
 }
 
-export interface ISSDispositivoData {
+export interface ISSCriarDispositivo {
   client_id: string;
   client_secret: string;
   device_id: string;
@@ -65,7 +65,7 @@ export interface ISSDispositivoData {
   empresa_nfce_proximo_numero: number;
 }
 
-export interface ISSTokenData {
+export interface ISSCriarToken {
   token: string;
   expires_in: number;
   type: string;

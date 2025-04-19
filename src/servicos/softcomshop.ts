@@ -5,7 +5,7 @@ import { Axios } from '../servicos/axios';
 import { Util } from '../util';
 
 import { IRetornoServico } from './types/padroes';
-import { ICriarDispositivo, ICriarToken, ISSDispositivoData, ISSResponseBase, ISSTokenData } from './types/softcomshop';
+import { ICriarDispositivo, ICriarToken, ISSCriarDispositivo, ISSResponseBase, ISSCriarToken } from './types/softcomshop';
 
 const MODULO = '[Softcomshop]';
 
@@ -29,7 +29,7 @@ const criarDispositivo = async (erp_url: string): Promise<IRetornoServico<ICriar
       device_id: device_name,
     });
 
-    const response = await Axios.defaultAxios.post<ISSResponseBase<ISSDispositivoData>>(url.origin + url.pathname, data, {
+    const response = await Axios.defaultAxios.post<ISSResponseBase<ISSCriarDispositivo>>(url.origin + url.pathname, data, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
@@ -76,7 +76,7 @@ const criarToken = async (client_id: string, client_secret: string): Promise<IRe
       client_secret,
     });
 
-    const response = await Axios.defaultAxios.post<ISSResponseBase<ISSTokenData>>(
+    const response = await Axios.defaultAxios.post<ISSResponseBase<ISSCriarToken>>(
       'https://qualidadeexperience.softcomshop.com.br/softauth/authentication/token',
       data,
       {
