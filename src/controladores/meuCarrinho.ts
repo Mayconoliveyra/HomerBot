@@ -98,7 +98,45 @@ const configuracao = async (req: Request<{}, {}, IBodyProps>, res: Response) => 
   return res.status(StatusCodes.NO_CONTENT).send();
 };
 
+const teste = async (req: Request, res: Response) => {
+  const empresa_id = req.body?.empresa_id as number;
+
+  const empresa = await Repositorios.Empresa.buscarPorId(empresa_id);
+
+  if (!empresa) {
+    return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: 'Empresa não encontrada.' } });
+  }
+
+  /* const teste = await Servicos.MeuCarrinho.criarProduto(empresa_id, {
+    categoryId: '1bec277f-3e1a-4a92-98f0-ea09872bdfa4',
+    merchantId: empresa.mc_empresa_id || '',
+    name: 'agora 123',
+    code: '8877',
+    description: 'descricao',
+    price: 1.55,
+  }); */
+
+  /*   const teste = await Servicos.MeuCarrinho.criarVariacaoItem(empresa_id, '07b4f087-f79a-43f1-b043-9f4c96414a3b', {
+    name: 'teste 654',
+    code: '11770',
+    value: 99.99,
+    description: '987',
+  }); */
+
+  const teste = await Servicos.MeuCarrinho.ordenarVariacaoCabecalho(
+    empresa_id,
+    '29bc73f8-73cb-4300-bda2-a6a8b6555fd6',
+    '8fc6e50e-5377-450c-83b8-4d07d3c1e684',
+    1,
+  );
+
+  console.log('teste', teste);
+
+  return res.status(StatusCodes.NO_CONTENT).send();
+};
+
 export const MeuCarrinho = {
   configuracaoValidacao,
   configuracao,
+  teste,
 };

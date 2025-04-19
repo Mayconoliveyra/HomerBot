@@ -143,6 +143,193 @@ export interface IMCGetEmpresa {
   }[];
 }
 
+export interface IMCGetCategorias {
+  merchantId: string;
+  id: string;
+  code: string;
+  name: string;
+  priority: number;
+  availability: string;
+  byIntegration: boolean;
+  products: [];
+}
+
+export interface IMCGetProdutos {
+  merchantId: string;
+  categoryId: string;
+  id: string;
+  code: string;
+  ean: string;
+  priority: number;
+  name: string;
+  description: string;
+  price: number;
+  availability: string;
+  availabilityOrigin: string;
+  measure: string;
+  merchantSuggestion: boolean;
+  byIntegration: boolean;
+  isPromotion: boolean;
+  promotion: null;
+  stock: {
+    active: boolean;
+    current: number;
+    min: number;
+    orderMax: number;
+  };
+  ship: {
+    active: boolean;
+    height: number;
+    width: number;
+    length: number;
+    weight: number;
+  };
+  images: {
+    id: string;
+    default: boolean;
+    description: string;
+    path: string;
+  }[];
+  variationsGrid: boolean;
+  variations: [];
+}
+
+export interface IMCGetProdutoPorId {
+  merchantId: string;
+  categoryId: string;
+  id: string;
+  code: string;
+  ean: string | null;
+  priority: number;
+  name: string;
+  description: string;
+  price: number;
+  availability: string;
+  availabilityOrigin: string;
+  measure: string;
+  merchantSuggestion: boolean;
+  byIntegration: boolean;
+  isPromotion: boolean;
+  promotion: any | null;
+  stock: {
+    active: boolean;
+    current: number;
+    min: number;
+    orderMax: number;
+  };
+  ship: {
+    active: boolean;
+    height: number;
+    width: number;
+    length: number;
+    weight: number;
+  };
+  images: {
+    id: string;
+    default: boolean;
+    description: string;
+    path: string;
+  }[];
+  variationsGrid: boolean;
+  variations: {
+    productId: string;
+    id: string;
+    name: string;
+    required: boolean;
+    itemsMin: number;
+    itemsMax: number;
+    colorHex: string | null;
+    priority: number;
+    availability: string;
+    calcType: string;
+    items: {
+      variationId: string;
+      id: string;
+      code: string;
+      ean: string | null;
+      name: string;
+      description: string;
+      value: number;
+      colorHex: string | null;
+      availability: string;
+      priority: number;
+      stock: {
+        active: boolean;
+        current: number;
+        min: number;
+      };
+    }[];
+  }[];
+}
+
+export interface IMCAddImgPorUrl {
+  id: string;
+  default: boolean;
+  description: string;
+  path: string;
+}
+
+export interface IMCCriarCategoria {
+  merchantId: string;
+  name: string;
+  code: string;
+}
+
+export interface IMCCriarProduto {
+  categoryId: string;
+  merchantId: string;
+  name: string;
+  code: string;
+  description: string;
+  price: number;
+}
+
+export interface IMCCriarVariacaoCabecalho {
+  name: string;
+  required: boolean;
+  itemsMin: number;
+  itemsMax: number;
+}
+
+export interface IMCCriarVariacaoCabecalhoResponse {
+  productId: string;
+  id: string;
+  name: string;
+  required: boolean;
+  itemsMin: number;
+  itemsMax: number;
+  colorHex: string | null;
+  priority: number;
+  availability: string;
+  calcType: string;
+  items: [];
+}
+
+export interface IMCCriarVariacaoItem {
+  name: string;
+  code: string;
+  description: string;
+  value: number;
+}
+
+export interface IMCCriarVariacaoItemResponse {
+  variationId: string;
+  id: string;
+  code: string;
+  ean: string | null;
+  name: string;
+  description: string;
+  value: number;
+  colorHex: string | null;
+  availability: string;
+  priority: number;
+  stock: {
+    active: boolean;
+    current: number;
+    min: number;
+  };
+}
+
 export interface IAutenticar {
   token: string;
   expiresAt: number;

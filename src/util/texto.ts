@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 /**
  * Trunca um texto para um número máximo de caracteres, garantindo que a saída tenha exatamente o limite especificado.
  * Se `adicionarReticencias` for `true`, os "..." contarão dentro do limite.
@@ -75,5 +77,20 @@ const tratarComoBoolean = (valor: unknown): boolean | undefined => {
   return undefined;
 };
 
+const formatarParaTextoSimples = (texto: string) => {
+  return texto
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+    .toLowerCase()
+    .replace(/[^\w\s]/gi, '') // Remove caracteres especiais
+    .replace(/\s+/g, ' ') // Remove múltiplos espaços
+    .trim();
+};
+
+function gerarHashTexto(nome: string): string {
+  const nomeNormalizado = formatarParaTextoSimples(nome);
+  return crypto.createHash('md5').update(nomeNormalizado).digest('hex');
+}
+
 // Exportando as funções dentro de um objeto Texto para facilitar a importação e organização.
-export const Texto = { truncarTexto, ehTamanhoExato, tratarComoString, tratarComoNumero, tratarComoBoolean };
+export const Texto = { truncarTexto, ehTamanhoExato, tratarComoString, tratarComoNumero, tratarComoBoolean, formatarParaTextoSimples, gerarHashTexto };
