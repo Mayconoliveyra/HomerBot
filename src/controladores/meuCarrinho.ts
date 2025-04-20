@@ -123,7 +123,8 @@ const teste = async (req: Request, res: Response) => {
     description: '987',
   }); */
 
-  console.log('aaa');
+  const teste = await Servicos.MeuCarrinho.alimentarProdutos(empresa_id, empresa.mc_empresa_id || '');
+  console.log('teste', teste);
 
   return res.status(StatusCodes.NO_CONTENT).send();
 };

@@ -194,7 +194,7 @@ export interface IMCGetProdutos {
   variations: [];
 }
 
-export interface IMCGetProdutoPorId {
+export interface IMCGetProdutoVariacao {
   merchantId: string;
   categoryId: string;
   id: string;
@@ -259,6 +259,36 @@ export interface IMCGetProdutoPorId {
         min: number;
       };
     }[];
+  }[];
+}
+
+export interface IMCGetProdutoVariacaoResponse {
+  productId: string;
+  id: string;
+  name: string;
+  required: boolean;
+  itemsMin: number;
+  itemsMax: number;
+  colorHex: string | null;
+  priority: number;
+  availability: 'AVAILABLE' | 'UNAVAILABLE';
+  calcType: string;
+  items: {
+    variationId: string;
+    id: string;
+    code: string;
+    ean: string | null;
+    name: string;
+    description: string;
+    value: number;
+    colorHex: string | null;
+    availability: 'AVAILABLE' | 'UNAVAILABLE';
+    priority: number;
+    stock: {
+      active: boolean;
+      current: number;
+      min: number;
+    };
   }[];
 }
 

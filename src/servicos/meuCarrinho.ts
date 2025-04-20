@@ -1,3 +1,7 @@
+import { IProdutoMC } from '../banco/models/produtoMC';
+
+import { Repositorios } from '../repositorios';
+
 import { Axios } from '../servicos/axios';
 import {
   IAutenticar,
@@ -8,7 +12,7 @@ import {
   IMCGetCategorias,
   IMCGetEmpresa,
   IMCGetUsuario,
-  IMCGetProdutoPorId,
+  IMCGetProdutoVariacao,
   IMCGetProdutos,
   IMCAddImgPorUrl,
   IMCCriarCategoria,
@@ -17,6 +21,7 @@ import {
   IMCCriarVariacaoCabecalho,
   IMCCriarVariacaoCabecalhoResponse,
   IMCCriarVariacaoItemResponse,
+  IMCGetProdutoVariacaoResponse,
 } from '../servicos/types/meuCarrinho';
 import { IRetornoServico } from '../servicos/types/padroes';
 
@@ -46,6 +51,15 @@ const formatarErroValidacao = (erro: any): string => {
     return 'Erro inesperado ao tratar erro.';
   }
 };
+
+// Função para dividir o array em lotes
+function dividirEmLotes<T>(array: T[], size: number): T[][] {
+  const resultado = [];
+  for (let i = 0; i < array.length; i += size) {
+    resultado.push(array.slice(i, i + size));
+  }
+  return resultado;
+}
 
 const autenticar = async (usuario: string, senha: string): Promise<IRetornoServico<IAutenticar>> => {
   try {
@@ -200,7 +214,7 @@ const getProdutos = async (empresaId: number): Promise<IRetornoServico<IMCGetPro
   }
 };
 
-const getProdutoPorId = async (empresaId: number, produtoId: string): Promise<IRetornoServico<IMCGetProdutoPorId[]>> => {
+const getProdutoVariacao = async (empresaId: number, produtoId: string): Promise<IRetornoServico<IMCGetProdutoVariacaoResponse[] | []>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -211,11 +225,11 @@ const getProdutoPorId = async (empresaId: number, produtoId: string): Promise<IR
       };
     }
 
-    const response = await apiAxiosMC.get<IMCGetProdutoPorId[]>(`/products/${produtoId}`);
+    const response = await apiAxiosMC.get<IMCGetProdutoVariacao>(`/products/${produtoId}`);
 
     return {
       sucesso: true,
-      dados: response.data,
+      dados: response.data.variations,
       erro: null,
     };
   } catch (error) {
@@ -843,13 +857,220 @@ const atEstoqueVariacao = async (empresaId: number, variacoes: { variationId: st
   }
 };
 
+const alimentarProdutos = async (empresaId: number, merchantId: string): Promise<IRetornoServico<string>> => {
+  try {
+    let totalVariacoesEncontradas = 0;
+    let totalVariacoesItensEncontrados = 0;
+
+    const resultApagarProdutos = await Repositorios.ProdutosMC.apagarProdutosPorEmpresaId(empresaId);
+    if (!resultApagarProdutos) {
+      return {
+        sucesso: false,
+        dados: null,
+        erro: Util.Msg.erroInesperado,
+      };
+    }
+
+    // ### CATEGORIAS ####
+    const allCategorias = await getCategorias(empresaId, merchantId);
+    if (!allCategorias.sucesso || !allCategorias.dados) {
+      return {
+        sucesso: false,
+        dados: null,
+        erro: allCategorias.erro,
+      };
+    }
+    Util.Log.info(`${MODULO} | Total de categorias encontradas: ${allCategorias.dados.length}`);
+
+    // ### PRODUTOS ####
+    const allProdutosMc = await getProdutos(empresaId);
+    if (!allProdutosMc.sucesso || !allProdutosMc.dados) {
+      return {
+        sucesso: false,
+        dados: null,
+        erro: allProdutosMc.erro,
+      };
+    }
+    Util.Log.info(`${MODULO} | Total de produtos encontrados: ${allProdutosMc.dados.length}`);
+
+    // Inserir categorias em massa
+    if (allCategorias.dados.length) {
+      const categoriasPromises: Partial<IProdutoMC>[] = allCategorias.dados
+        .filter((c) => {
+          if (!c.code) {
+            Util.Log.warn(`${MODULO} | Categoria ignorada. Sem codigo PDV.`, c);
+            return false;
+          }
+
+          return true;
+        })
+        .map((c) => ({
+          type: 'CATEGORY',
+          empresa_id: empresaId,
+          c_id: c.id,
+          c_code: c.code,
+          c_name: c.name,
+          c_availability: c.availability,
+        }));
+
+      const resultInserirCategorias = await Repositorios.ProdutosMC.inserir(categoriasPromises);
+      if (!resultInserirCategorias) {
+        return {
+          sucesso: false,
+          dados: null,
+          erro: Util.Msg.erroInesperado,
+        };
+      }
+    }
+
+    // Carregar mapa de categorias
+    const dbCategorias = await Repositorios.ProdutosMC.consultarCategorias(empresaId);
+    if (!dbCategorias) {
+      return {
+        sucesso: false,
+        dados: null,
+        erro: Util.Msg.erroInesperado,
+      };
+    }
+    const categoriasMap = new Map(dbCategorias.map((c) => [c.c_id, c]));
+
+    // Processar produtos
+    if (allProdutosMc.dados.length > 0) {
+      for (const p of allProdutosMc.dados) {
+        const c = categoriasMap.get(p.categoryId);
+
+        if (!p.code || !c) {
+          Util.Log.warn(`${MODULO} | Produto ignorado. Sem codigo PDV no produto ou na categoria.`, p);
+          continue;
+        }
+
+        const modeloProduct: Partial<IProdutoMC> = {
+          type: 'PRODUCT',
+          empresa_id: empresaId,
+          c_id: c.c_id,
+          c_code: c.c_code,
+          c_name: c.c_name,
+          c_availability: c.c_availability,
+          p_id: p.id,
+          p_name: p.name,
+          p_description: p.description || null,
+          p_category_id: p.categoryId,
+          p_price: p.price || 0,
+          p_code: p.code,
+          p_availability: p.availability,
+          p_stock_current: p.stock.current,
+          p_stock_active: p.stock.active,
+          p_variations_grid: p.variationsGrid,
+        };
+
+        const resultInserirProduto = await Repositorios.ProdutosMC.inserir(modeloProduct);
+        if (!resultInserirProduto) {
+          return {
+            sucesso: false,
+            dados: null,
+            erro: Util.Msg.erroInesperado,
+          };
+        }
+
+        // ### VARIAÇÕES CABEÇALHO ####
+        const productAndVariation = await getProdutoVariacao(empresaId, p.id);
+        // Se houver erro retornar
+        if (!productAndVariation.sucesso) {
+          return {
+            sucesso: false,
+            dados: null,
+            erro: productAndVariation.erro,
+          };
+        }
+
+        // Verifica se o produto tem variações
+        if (productAndVariation.dados && productAndVariation.dados.length > 0) {
+          for (const v of productAndVariation.dados) {
+            totalVariacoesEncontradas++;
+
+            const modeloVariation: Partial<IProdutoMC> = {
+              type: 'VARIATION_HEADER',
+              empresa_id: empresaId,
+              v_id: v.id,
+              v_name: v.name,
+              v_required: v.required,
+              v_items_min: v.itemsMin,
+              v_items_max: v.itemsMax,
+              v_availability: v.availability,
+              v_name_hash: Util.Texto.gerarHashTexto(Util.Texto.formatarParaTextoSimples(v.name)),
+            };
+
+            // ### VARIAÇÕES ITENS ####
+            const resultInserirVariacao = await Repositorios.ProdutosMC.inserir({ ...modeloProduct, ...modeloVariation });
+            if (!resultInserirVariacao) {
+              return {
+                sucesso: false,
+                dados: null,
+                erro: Util.Msg.erroInesperado,
+              };
+            }
+
+            // Verifica se tem itens na variação.
+            if (v.items && v.items.length > 0) {
+              const itensVariacao: Partial<IProdutoMC>[] = v.items.map((vi) => {
+                totalVariacoesItensEncontrados++;
+
+                return {
+                  ...modeloProduct,
+                  ...modeloVariation,
+                  type: 'VARIATION_ITEM',
+                  empresa_id: empresaId,
+                  vi_id: vi.id,
+                  vi_code: vi.code,
+                  vi_name: vi.name,
+                  vi_description: vi.description || null,
+                  vi_value: vi.value,
+                  vi_availability: vi.availability,
+                  vi_stock_current: vi.stock.current,
+                  vi_stock_active: vi.stock.active,
+                };
+              });
+
+              const resultInserirVariacaoItens = await Repositorios.ProdutosMC.inserir(itensVariacao);
+              if (!resultInserirVariacaoItens) {
+                return {
+                  sucesso: false,
+                  dados: null,
+                  erro: Util.Msg.erroInesperado,
+                };
+              }
+            }
+          }
+        }
+      }
+    }
+
+    Util.Log.info(`${MODULO} | Total de variações encontradas: ${totalVariacoesEncontradas}`);
+    Util.Log.info(`${MODULO} | Total de variações item encontrados: ${totalVariacoesItensEncontrados}`);
+
+    return {
+      sucesso: true,
+      dados: null,
+      erro: 'Sucesso!',
+    };
+  } catch (error) {
+    Util.Log.error(`${MODULO} | Erro ao alimentar os produtos do Meu Carrinho`, error);
+
+    return {
+      sucesso: false,
+      dados: null,
+      erro: Util.Msg.erroInesperado,
+    };
+  }
+};
+
 export const MeuCarrinho = {
   autenticar,
   getUsuario,
   getEmpresa,
   getCategorias,
   getProdutos,
-  getProdutoPorId,
+  getProdutoVariacao,
   criarCategoria,
   criarProduto,
   criarVariacaoCabecalho,
@@ -866,4 +1087,5 @@ export const MeuCarrinho = {
   deleteCategoriaPorId,
   deleteProdutoPorId,
   addImgPorUrl,
+  alimentarProdutos,
 };
