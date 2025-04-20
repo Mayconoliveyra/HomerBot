@@ -123,7 +123,7 @@ const teste = async (req: Request, res: Response) => {
     description: '987',
   }); */
 
-  const teste = await Servicos.SoftcomShop.getProdutos(empresa_id);
+  const teste = await Servicos.SoftcomShop.getCombos(empresa_id);
   console.log('teste', teste);
 
   return res.status(StatusCodes.NO_CONTENT).send();

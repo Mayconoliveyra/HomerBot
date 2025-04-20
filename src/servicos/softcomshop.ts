@@ -5,7 +5,16 @@ import { Axios } from '../servicos/axios';
 import { Util } from '../util';
 
 import { IRetornoServico } from './types/padroes';
-import { ICriarDispositivo, ICriarToken, ISSCriarDispositivo, ISSResponseBase, ISSCriarToken, ISSGetProdutos } from './types/softcomshop';
+import {
+  ICriarDispositivo,
+  ICriarToken,
+  ISSCriarDispositivo,
+  ISSResponseBase,
+  ISSCriarToken,
+  ISSGetProdutos,
+  ISSGetGrupos,
+  ISSGetCombos,
+} from './types/softcomshop';
 
 const MODULO = '[Softcomshop]';
 
@@ -170,8 +179,122 @@ const getProdutos = async (empresaId: number): Promise<IRetornoServico<ISSGetPro
   }
 };
 
+const getGrupos = async (empresaId: number): Promise<IRetornoServico<ISSGetGrupos[]>> => {
+  try {
+    const apiAxiosSS = await Axios.axiosSoftcomshop(empresaId);
+    if (typeof apiAxiosSS === 'string') {
+      return {
+        sucesso: false,
+        dados: null,
+        erro: apiAxiosSS,
+      };
+    }
+    const result: ISSGetGrupos[] = [];
+
+    let page = 1;
+    let countPages = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await apiAxiosSS.get<ISSResponseBase<ISSGetGrupos[]>>(`/api/produtos/grupos/page/${page}`);
+
+      if (response.data.code !== 1) {
+        return {
+          sucesso: false,
+          dados: null,
+          erro: response.data.human || 'Erro ao consultar grupos',
+        };
+      }
+
+      const grupos = response.data.data;
+      const currentPage = response.data.meta.page.current;
+      countPages = response.data.meta.page.count;
+
+      result.push(...grupos);
+
+      if (currentPage !== countPages) {
+        page += 1;
+      } else {
+        hasMore = false;
+      }
+    }
+
+    return {
+      sucesso: true,
+      dados: result,
+      erro: null,
+    };
+  } catch (error) {
+    Util.Log.error(`${MODULO} | Erro ao consultar grupos.`, error);
+
+    return {
+      sucesso: false,
+      dados: null,
+      erro: Util.Msg.erroInesperado,
+    };
+  }
+};
+
+const getCombos = async (empresaId: number): Promise<IRetornoServico<ISSGetCombos[]>> => {
+  try {
+    const apiAxiosSS = await Axios.axiosSoftcomshop(empresaId);
+    if (typeof apiAxiosSS === 'string') {
+      return {
+        sucesso: false,
+        dados: null,
+        erro: apiAxiosSS,
+      };
+    }
+    const result: ISSGetCombos[] = [];
+
+    let page = 1;
+    let countPages = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await apiAxiosSS.get<ISSResponseBase<ISSGetCombos[]>>(`/api/restaurantes/produto-combo?page=${page}`);
+
+      if (!response.data) {
+        return {
+          sucesso: false,
+          dados: null,
+          erro: 'Erro ao consultar combos',
+        };
+      }
+
+      const combos = response.data.data;
+      const currentPage = response.data.current_page;
+      countPages = response.data.last_page;
+
+      result.push(...combos);
+
+      if (currentPage !== countPages) {
+        page += 1;
+      } else {
+        hasMore = false;
+      }
+    }
+
+    return {
+      sucesso: true,
+      dados: result,
+      erro: null,
+    };
+  } catch (error) {
+    Util.Log.error(`${MODULO} | Erro ao consultar combos.`, error);
+
+    return {
+      sucesso: false,
+      dados: null,
+      erro: Util.Msg.erroInesperado,
+    };
+  }
+};
+
 export const SoftcomShop = {
   criarDispositivo,
   criarToken,
   getProdutos,
+  getGrupos,
+  getCombos,
 };

@@ -12,6 +12,8 @@ export interface ISSResponseBase<T = any> {
     };
   };
   date_sync: number;
+  current_page: number;
+  last_page: number;
 }
 
 export interface ISSCriarDispositivo {
@@ -137,6 +139,57 @@ export interface ISSGetProdutos {
   especifico: string | null;
   tabela_precos: any[]; // Ajuste o tipo do array conforme necessário
   produto_imagem: any[]; // Ajuste o tipo do array conforme necessário
+}
+
+export interface ISSGetGrupos {
+  id: string;
+  parent_id: number | null;
+  nome: string;
+  editavel: string; // Pode ser "SIM" ou outro valor (adicione tipos mais específicos se necessário)
+  vender: string; // Pode ser "1" ou outro valor (adicione tipos mais específicos se necessário)
+  created_at: string; // ISO date string
+  updated_at: string; // ISO date string
+  deleted_at: string | null; // ISO date string ou null
+  imagem: string;
+  armacao: string; // Pode ser "0" ou outro valor
+  lente: string; // Pode ser "0" ou outro valor
+  restaurante_familia_id: number | null;
+  habilitar_acompanhamento: string | null;
+  acompanhamento_grupo_id: number | null;
+  qtd_max: number | null;
+  self_service: string | null;
+  perguntar_adicionais: string | null;
+  nao_enviar_comanda: string; // Pode ser "0" ou outro valor
+  cobrar_taxa_servico: string | null;
+  adicional: string; // Pode ser "0" ou outro valor
+  marketplace_created_at: string | null; // ISO date string ou null
+  marketplace_updated_at: string | null; // ISO date string ou null
+  marketplace_code: string | null;
+  restaurante_setor_id: number | null;
+  observacoes: {
+    id: number;
+    descricao: string;
+  }[]; // Array de objetos Observacao
+  adicionais: any[]; // Ajuste o tipo se os dados de adicionais forem conhecidos
+}
+
+export interface ISSGetCombos {
+  id: number;
+  produto_id: string;
+  descricao: string;
+  quantidade_minima: number;
+  quantidade_maxima: number;
+  ordem: number;
+  habilitar_pizza: number;
+  tipo_calculo_preco: number;
+  itens: {
+    id: number;
+    produto_combo_id: number;
+    produto_id: string;
+    preco_venda: string;
+    quantidade: number;
+    codigo_pdv: string;
+  }[];
 }
 
 export interface ICriarDispositivo {
