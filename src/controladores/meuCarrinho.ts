@@ -123,8 +123,10 @@ const teste = async (req: Request, res: Response) => {
     description: '987',
   }); */
 
-  const teste = await Servicos.SoftcomShop.getCombos(empresa_id);
-  console.log('teste', teste);
+  const mc = await Servicos.MeuCarrinho.alimentarProdutos(empresa_id, empresa.mc_empresa_id || '');
+  const ss = await Servicos.SoftcomShop.alimentarProdutos(empresa_id);
+  console.log('mc', mc);
+  console.log('ss', ss);
 
   return res.status(StatusCodes.NO_CONTENT).send();
 };

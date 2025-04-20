@@ -182,14 +182,16 @@ export interface ISSGetCombos {
   ordem: number;
   habilitar_pizza: number;
   tipo_calculo_preco: number;
-  itens: {
-    id: number;
-    produto_combo_id: number;
-    produto_id: string;
-    preco_venda: string;
-    quantidade: number;
-    codigo_pdv: string;
-  }[];
+  itens: ISSGetCombosItens[];
+}
+
+export interface ISSGetCombosItens {
+  id: number;
+  produto_combo_id: number;
+  produto_id: string;
+  preco_venda: string;
+  quantidade: number;
+  codigo_pdv: string;
 }
 
 export interface ICriarDispositivo {

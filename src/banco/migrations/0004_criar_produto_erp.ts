@@ -27,7 +27,7 @@ export async function up(knex: Knex) {
       table.integer('erp_p_stock_current').nullable();
       table.boolean('erp_p_stock_active').nullable();
       table.boolean('erp_p_variations_grid').nullable();
-      table.string('erp_erp_p_images').nullable();
+      table.text('erp_p_images').nullable();
 
       // Variação
       table.string('erp_v_name').nullable();
