@@ -95,8 +95,8 @@ const criarToken = async (client_id: string, client_secret: string): Promise<IRe
       };
     }
 
-    // Define que o token expira em 3 horas
-    const expiresAt = Math.floor(Date.now() / 1000) + 3 * 60 * 60;
+    const expiresIn = response.data.data.expires_in; // segundos
+    const expiresAt = Math.floor(Date.now() / 1000) + expiresIn;
 
     const dadosFormat = {
       token: response.data.data.token,
