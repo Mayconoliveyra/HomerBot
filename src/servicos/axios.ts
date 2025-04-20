@@ -111,7 +111,7 @@ const axiosSoftcomshop = async (empresaId: number) => {
 
     const timeCurrent = Math.floor(Date.now() / 1000);
     if (timeCurrent > empresa.ss_token_exp) {
-      const resToken = await Servicos.SoftcomShop.criarToken(empresa.ss_client_id, empresa.ss_client_secret);
+      const resToken = await Servicos.SoftcomShop.criarToken(empresa.ss_url, empresa.ss_client_id, empresa.ss_client_secret);
 
       if (!resToken.sucesso || !resToken.dados) {
         return resToken.erro || Util.Msg.erroInesperado;

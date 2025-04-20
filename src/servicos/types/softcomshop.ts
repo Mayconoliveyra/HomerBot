@@ -3,8 +3,15 @@ export interface ISSResponseBase<T = any> {
   message: string;
   human: string;
   data: T;
-  meta: any[];
-  date_sync?: number;
+  meta: {
+    page: {
+      current: number;
+      prev: number | null;
+      next: number | null;
+      count: 1;
+    };
+  };
+  date_sync: number;
 }
 
 export interface ISSCriarDispositivo {
@@ -70,6 +77,66 @@ export interface ISSCriarToken {
   expires_in: number;
   type: string;
   scope: string | null;
+}
+
+export interface ISSGetProdutos {
+  id: number;
+  empresa_id: string;
+  produto_empresa_id: string;
+  vinculo_fiscal: any[];
+  sku: string;
+  sku_atributo: string;
+  codigo_barras_grade: string;
+  estoque: number;
+  fabricante: string | null;
+  nome_original: string;
+  nome: string;
+  produto_id: string;
+  fabricante_id: string | null;
+  codigo_barras: string | null;
+  referencia: string;
+  grupo_id: string;
+  observacao: string | null;
+  unidade_medida: string;
+  peso: string;
+  kds_tempo_preparo: string | null;
+  tributos_estaduais: string;
+  tributos_federais: string;
+  tributos_municipais: string;
+  margem_lucro: string;
+  ncm: string | null;
+  cest: string | null;
+  percentual_comissao_produto: string;
+  agrupar_pedido: boolean;
+  habilitar_grade: boolean;
+  servico: string | null;
+  promocao_preco: string;
+  promocao_validade: string | null;
+  promocao_quantidade: string | null;
+  codigo_beneficio_fiscal: string | null;
+  vender: boolean;
+  origem: string;
+  taxa_entrega: string;
+  preco_venda: string;
+  preco_compra: string;
+  habilitar_acompanhamento: string;
+  self_service: string | null;
+  perguntar_adicionais: string | null;
+  cobrar_taxa_entrega: string | null;
+  nao_enviar_comanda: string | null;
+  cobrar_taxa_servico: string;
+  taxa_adicional_delivery: string;
+  tipo_combo: string;
+  tipo_faturamento: string;
+  preco_a_partir_de: string;
+  agrupar_impressao_item_combo: string;
+  item_lista_servico: string | null;
+  codigo_tributacao_municipal: string | null;
+  data_atualizacao_preco: string; // ISO date string
+  codigo_nfe: string;
+  especifico: string | null;
+  tabela_precos: any[]; // Ajuste o tipo do array conforme necessário
+  produto_imagem: any[]; // Ajuste o tipo do array conforme necessário
 }
 
 export interface ICriarDispositivo {

@@ -46,8 +46,8 @@ const configuracao = async (req: Request<{}, {}, IBodyProps>, res: Response) => 
     return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: 'Empresa não encontrada.' } });
   }
 
-  if (erp_url === empresa.ss_qrcode_url && empresa.ss_client_id && empresa.ss_client_secret) {
-    const resToken = await Servicos.SoftcomShop.criarToken(empresa.ss_client_id, empresa.ss_client_secret);
+  if (erp_url === empresa.ss_qrcode_url && empresa.ss_url && empresa.ss_client_id && empresa.ss_client_secret) {
+    const resToken = await Servicos.SoftcomShop.criarToken(empresa.ss_url, empresa.ss_client_id, empresa.ss_client_secret);
 
     if (!resToken.sucesso || !resToken.dados) {
       await limparConfigSS(empresa_id);
@@ -83,7 +83,7 @@ const configuracao = async (req: Request<{}, {}, IBodyProps>, res: Response) => 
     });
   }
 
-  const resToken = await Servicos.SoftcomShop.criarToken(resDispositivo.dados.client_id, resDispositivo.dados.client_secret);
+  const resToken = await Servicos.SoftcomShop.criarToken(resDispositivo.dados.url_base, resDispositivo.dados.client_id, resDispositivo.dados.client_secret);
 
   if (!resToken.sucesso || !resToken.dados) {
     await limparConfigSS(empresa_id);

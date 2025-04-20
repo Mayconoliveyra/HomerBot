@@ -52,15 +52,6 @@ const formatarErroValidacao = (erro: any): string => {
   }
 };
 
-// Função para dividir o array em lotes
-function dividirEmLotes<T>(array: T[], size: number): T[][] {
-  const resultado = [];
-  for (let i = 0; i < array.length; i += size) {
-    resultado.push(array.slice(i, i + size));
-  }
-  return resultado;
-}
-
 const autenticar = async (usuario: string, senha: string): Promise<IRetornoServico<IAutenticar>> => {
   try {
     const response = await Axios.defaultAxios.post<IMCAutenticar>(`${BASE_URL_MC}/auth/token`, {
