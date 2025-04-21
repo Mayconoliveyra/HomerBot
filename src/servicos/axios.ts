@@ -65,8 +65,8 @@ const axiosMeuCarrinho = async (empresaId: number) => {
     if (timeCurrent > empresa.mc_token_exp) {
       const resToken = await Servicos.MeuCarrinho.autenticar(empresa.mc_usuario || '', empresa.mc_senha || '');
 
-      if (!resToken.sucesso || !resToken.dados) {
-        return resToken.erro || Util.Msg.erroInesperado;
+      if (!resToken.sucesso) {
+        return resToken.erro;
       }
 
       const resAtDados = await Repositorios.Empresa.atualizarDados(empresaId, {
@@ -113,8 +113,8 @@ const axiosSoftcomshop = async (empresaId: number) => {
     if (timeCurrent > empresa.ss_token_exp) {
       const resToken = await Servicos.SoftcomShop.criarToken(empresa.ss_url, empresa.ss_client_id, empresa.ss_client_secret);
 
-      if (!resToken.sucesso || !resToken.dados) {
-        return resToken.erro || Util.Msg.erroInesperado;
+      if (!resToken.sucesso) {
+        return resToken.erro;
       }
 
       const resAtDados = await Repositorios.Empresa.atualizarDados(empresaId, {

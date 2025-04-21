@@ -40,4 +40,36 @@ const consultarCategorias = async (empresaId: number) => {
   }
 };
 
-export const ProdutosERP = { inserir, apagarProdutosPorEmpresaId, consultarCategorias };
+const consultarPrimeiroRegistroPorColuna = async (empresaId: number, type: IProdutoERP['type'], coluna: keyof IProdutoERP, valorBuscar: string) => {
+  try {
+    return await Knex.table(ETableNames.produtos_erp)
+      .select()
+      .where('empresa_id', '=', empresaId)
+      .where(coluna, '=', valorBuscar)
+      .andWhere('type', '=', type)
+      .first();
+  } catch (error) {
+    Util.Log.error(
+      `${MODULO} | Erro ao consultar primeiro registro por coluna: Type:${type.toLowerCase()}; coluna:${coluna.toLowerCase()}; valorBuscar:${valorBuscar.toLowerCase()};`,
+      error,
+    );
+    return false;
+  }
+};
+
+const consultar = async (
+  empresaId: number,
+  type: IProdutoERP['type'],
+  orderBy: { coluna: keyof IProdutoERP; direcao?: 'asc' | 'desc' } = { coluna: 'id', direcao: 'asc' },
+) => {
+  try {
+    return await Knex(ETableNames.produtos_erp)
+      .where('empresa_id', '=', empresaId)
+      .andWhere('type', '=', type)
+      .orderBy(orderBy.coluna, orderBy.direcao || 'asc');
+  } catch (error) {
+    Util.Log.error(`${MODULO} | Erro ao consultar ${type.toLowerCase()}.`, error);
+    return false;
+  }
+};
+export const ProdutosERP = { inserir, apagarProdutosPorEmpresaId, consultarCategorias, consultar, consultarPrimeiroRegistroPorColuna };

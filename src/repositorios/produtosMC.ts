@@ -40,4 +40,21 @@ const consultarCategorias = async (empresaId: number) => {
   }
 };
 
-export const ProdutosMC = { inserir, apagarProdutosPorEmpresaId, consultarCategorias };
+const consultarPrimeiroRegistroPorColuna = async (empresaId: number, type: IProdutoMC['type'], coluna: keyof IProdutoMC, valorBuscar: string) => {
+  try {
+    return await Knex.table(ETableNames.produtos_mc)
+      .select()
+      .where('empresa_id', '=', empresaId)
+      .where(coluna, '=', valorBuscar)
+      .andWhere('type', '=', type)
+      .first();
+  } catch (error) {
+    Util.Log.error(
+      `${MODULO} | Erro ao consultar primeiro registro por coluna: Type:${type.toLowerCase()}; coluna:${coluna.toLowerCase()}; valorBuscar:${valorBuscar.toLowerCase()};`,
+      error,
+    );
+    return false;
+  }
+};
+
+export const ProdutosMC = { inserir, apagarProdutosPorEmpresaId, consultarCategorias, consultarPrimeiroRegistroPorColuna };

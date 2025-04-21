@@ -383,7 +383,7 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
         continue;
       }
 
-      const imagens = (p.produto_imagem || []).sort((a, b) => (a.tipo == 'PRINCIPAL' ? -1 : 1)).map((img) => img.arquivo_original);
+      const imagens = (p.produto_imagem || []).sort((a, _) => (a.tipo == 'PRINCIPAL' ? -1 : 1)).map((img) => img.arquivo_original);
 
       const modeloProduct: Partial<IProdutoERP> = {
         type: 'PRODUCT',
@@ -443,7 +443,9 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
           erp_v_items_max: v.erp_v_items_max,
           erp_v_availability: v.erp_v_availability,
           erp_v_ordem: v.erp_v_ordem,
-          erp_v_name_hash: Util.Texto.gerarHashTexto(Util.Texto.formatarParaTextoSimples(v.erp_v_name || '')),
+          erp_v_name_hash: Util.Texto.gerarHashTexto(
+            Util.Texto.formatarParaTextoSimples(Util.Texto.truncarTexto(`${modeloProduct.erp_p_code}${v.erp_v_name}`, 100) || ''),
+          ),
         };
 
         const resultVariacao = await Repositorios.ProdutosERP.inserir(modeloVariation);
@@ -501,8 +503,8 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
 
     return {
       sucesso: true,
-      dados: null,
-      erro: 'Sucesso!',
+      dados: Util.Msg.sucesso,
+      erro: null,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao alimentar produtos`, error);

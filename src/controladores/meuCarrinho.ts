@@ -123,10 +123,10 @@ const teste = async (req: Request, res: Response) => {
     description: '987',
   }); */
 
-  const mc = await Servicos.MeuCarrinho.alimentarProdutos(empresa_id, empresa.mc_empresa_id || '');
-  const ss = await Servicos.SoftcomShop.alimentarProdutos(empresa_id);
+  /*  const mc = await Servicos.MeuCarrinho.zerarCadastros(empresa_id, empresa.mc_empresa_id || ''); */
+  const mc = await Servicos.MeuCarrinho.exportarMercadoriasParaMeuCarrinho(empresa_id, empresa.mc_empresa_id || '');
+
   console.log('mc', mc);
-  console.log('ss', ss);
 
   return res.status(StatusCodes.NO_CONTENT).send();
 };
