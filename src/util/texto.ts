@@ -1,5 +1,7 @@
 import crypto from 'crypto';
 
+import { Util } from '.';
+
 /**
  * Trunca um texto para um número máximo de caracteres, garantindo que a saída tenha exatamente o limite especificado.
  * Se `adicionarReticencias` for `true`, os "..." contarão dentro do limite.
@@ -51,8 +53,26 @@ const ehTamanhoExato = (texto: string | null | undefined, quantidadeEsperada: nu
  * @param valor Valor a ser tratado
  * @returns string tratada ou undefined
  */
-const tratarComoString = (valor: unknown): string | undefined => {
-  return typeof valor === 'string' ? valor.trim() : undefined;
+export const tratarComoString = (valor: unknown): string | undefined => {
+  try {
+    if (typeof valor === 'string') {
+      return valor.trim();
+    }
+
+    if (typeof valor === 'number' || typeof valor === 'boolean' || typeof valor === 'bigint' || typeof valor === 'symbol') {
+      return String(valor).trim();
+    }
+
+    // Se for objeto que pode ter .toString()
+    if (valor !== null && typeof valor === 'object' && typeof (valor as any).toString === 'function') {
+      return (valor as any).toString().trim();
+    }
+
+    return undefined;
+  } catch (error) {
+    Util.Log.error('[tratarComoString] Erro ao converter valor para string:', error);
+    return undefined;
+  }
 };
 
 /**
@@ -60,9 +80,36 @@ const tratarComoString = (valor: unknown): string | undefined => {
  * @param valor Valor a ser tratado
  * @returns número tratado ou undefined
  */
-const tratarComoNumero = (valor: unknown): number | undefined => {
-  const convertido = Number(valor);
-  return isNaN(convertido) ? undefined : convertido;
+export const tratarComoNumero = (valor: unknown, casasDecimais = 2): number | undefined => {
+  try {
+    let numero: number | undefined;
+
+    if (typeof valor === 'number') {
+      numero = valor;
+    } else if (typeof valor === 'string') {
+      const valorLimpo = valor
+        .trim()
+        .replace(/\s/g, '') // remove espaços
+        .replace(/,/g, '') // remove vírgulas de milhar
+        .replace(/[^\d.-]/g, ''); // remove tudo que não é número, ponto ou traço
+
+      numero = Number(valorLimpo);
+    } else if (
+      typeof valor === 'boolean' ||
+      typeof valor === 'bigint' ||
+      (valor !== null && typeof valor === 'object' && typeof (valor as any).toString === 'function')
+    ) {
+      numero = Number((valor as any).toString());
+    }
+
+    if (numero === undefined || isNaN(numero)) return undefined;
+
+    const fator = Math.pow(10, casasDecimais);
+    return Math.round(numero * fator) / fator;
+  } catch (error) {
+    Util.Log.error('[tratarComoNumero] Erro ao converter valor para número:', error);
+    return undefined;
+  }
 };
 
 /**

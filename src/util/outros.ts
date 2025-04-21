@@ -1,3 +1,5 @@
+import { Util } from '.';
+
 export function ehObjetoValido<T extends object>(objeto: T, colunasIgnoradas: Array<keyof T> = []): boolean {
   try {
     return Object.entries(objeto).every(([chave, valor]) => {
@@ -6,7 +8,7 @@ export function ehObjetoValido<T extends object>(objeto: T, colunasIgnoradas: Ar
       return valor !== null && valor !== '' && valor !== undefined;
     });
   } catch (error) {
-    console.error('[ehObjetoValido] Erro ao validar objeto:', error);
+    Util.Log.error('[ehObjetoValido] Erro ao validar objeto:', error);
     return false;
   }
 }

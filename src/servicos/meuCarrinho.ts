@@ -972,7 +972,7 @@ const alimentarProdutos = async (empresaId: number, merchantId: string): Promise
         const c = categoriasMap.get(p.categoryId);
 
         if (!p.code || !c) {
-          Util.Log.warn(`${MODULO} | Produto ignorado. Sem codigo PDV no produto ou na categoria.`, p);
+          //  Util.Log.warn(`${MODULO} | Produto ignorado. Sem codigo PDV no produto ou na categoria.`, p);
           continue;
         }
 
@@ -1029,7 +1029,7 @@ const alimentarProdutos = async (empresaId: number, merchantId: string): Promise
               v_items_min: v.itemsMin,
               v_items_max: v.itemsMax,
               v_availability: v.availability,
-              v_name_hash: Util.Texto.gerarHashTexto(Util.Texto.formatarParaTextoSimples(Util.Texto.truncarTexto(`${p.code}${v.name}`, 100) || '')),
+              v_name_hash: Util.Texto.gerarHashTexto(Util.Texto.formatarParaTextoSimples(`${modeloProduct.p_code}${v.name}`)),
             };
 
             // ### VARIAÇÕES ITENS ####
@@ -1370,12 +1370,12 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
             p_variations_grid: produto.p_variations_grid,
 
             v_id: resCriarVariacaoCabecalho.dados.id,
-            v_name: Util.Texto.truncarTexto(v.erp_v_name, 100) || '',
+            v_name: v.erp_v_name,
             v_required: v.erp_v_required ?? false,
             v_items_min: v.erp_v_items_min ?? 1,
             v_items_max: v.erp_v_items_max ?? 1,
             v_availability: v.erp_v_availability ?? 'AVAILABLE',
-            v_name_hash: Util.Texto.gerarHashTexto(Util.Texto.formatarParaTextoSimples(Util.Texto.truncarTexto(`${v.erp_p_code}${v.erp_v_name}`, 100) || '')),
+            v_name_hash: Util.Texto.gerarHashTexto(Util.Texto.formatarParaTextoSimples(`${produto.p_code}${v.erp_v_name}`)),
           };
 
           const resultInserirVariacoes = await Repositorios.ProdutosMC.inserir(modeloVariation);
@@ -1411,14 +1411,14 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
           empresaId,
           'VARIATION_HEADER',
           'v_name_hash',
-          vi.erp_v_name || '',
+          vi.erp_v_name_hash || '',
         );
 
         if (!variacaoCabecalho || !variacaoCabecalho.v_id) {
           return {
             sucesso: false,
             dados: null,
-            erro: `Variação cabeçalho não foi entrada no banco(variacaoCabecalhoId): ${Util.Texto.truncarTexto(vi.erp_v_name, 100) || ''}`,
+            erro: `Variação cabeçalho não foi entrada no banco(variacaoCabecalhoId): ${vi.erp_v_name}`,
           };
         }
 

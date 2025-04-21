@@ -314,27 +314,27 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
 
     const [allCategorias, allVariacoes, allProdutos] = await Promise.all([getGrupos(empresaId), getCombos(empresaId), getProdutos(empresaId)]);
 
-    if (!allCategorias || !allCategorias.dados) {
+    if (!allCategorias.sucesso) {
       return {
         sucesso: false,
         dados: null,
-        erro: allCategorias.erro || Util.Msg.erroInesperado,
+        erro: allCategorias.erro,
       };
     }
 
-    if (!allVariacoes || !allVariacoes.dados) {
+    if (!allVariacoes.sucesso) {
       return {
         sucesso: false,
         dados: null,
-        erro: allVariacoes.erro || Util.Msg.erroInesperado,
+        erro: allVariacoes.erro,
       };
     }
 
-    if (!allProdutos || !allProdutos.dados) {
+    if (!allProdutos.sucesso) {
       return {
         sucesso: false,
         dados: null,
-        erro: allProdutos.erro || Util.Msg.erroInesperado,
+        erro: allProdutos.erro,
       };
     }
 
@@ -346,8 +346,8 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
         const modeloCategory: Partial<IProdutoERP> = {
           type: 'CATEGORY',
           empresa_id: empresaId,
-          erp_c_code: c?.id || null,
-          erp_c_name: c?.nome || null,
+          erp_c_code: Util.Texto.truncarTexto(Util.Texto.tratarComoString(c.id), 50),
+          erp_c_name: Util.Texto.truncarTexto(Util.Texto.tratarComoString(c.nome), 100),
           erp_c_availability: 'AVAILABLE',
         };
 
@@ -388,14 +388,14 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
       const modeloProduct: Partial<IProdutoERP> = {
         type: 'PRODUCT',
         empresa_id: empresaId,
-        erp_c_code: c.erp_c_code,
-        erp_c_name: c.erp_c_name,
+        erp_c_code: Util.Texto.truncarTexto(Util.Texto.tratarComoString(c.erp_c_code), 50),
+        erp_c_name: Util.Texto.truncarTexto(Util.Texto.tratarComoString(c.erp_c_name), 100),
         erp_c_availability: 'AVAILABLE',
-        erp_p_name: p.nome,
-        erp_p_description: p.observacao,
+        erp_p_name: Util.Texto.truncarTexto(Util.Texto.tratarComoString(p.nome), 100),
+        erp_p_description: Util.Texto.truncarTexto(Util.Texto.tratarComoString(p.observacao), 500),
         erp_p_category_id: p.grupo_id,
-        erp_p_price: Number(Util.Texto.tratarComoNumero(p.preco_venda)?.toFixed(2)) || 0,
-        erp_p_code: p.produto_id,
+        erp_p_price: Util.Texto.tratarComoNumero(p.preco_venda) ?? 0,
+        erp_p_code: Util.Texto.truncarTexto(Util.Texto.tratarComoString(p.produto_id), 50),
         erp_p_availability: 'AVAILABLE',
         erp_p_stock_current: 0,
         erp_p_stock_active: false,
@@ -403,7 +403,7 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
         erp_p_images: JSON.stringify(imagens),
       };
 
-      if (Number(modeloProduct.erp_p_price) == 0) {
+      if (modeloProduct.erp_p_price == 0) {
         // Util.Log.warn(`${MODULO} | Produto ignorado, preço 0: ID: ${p.id}, Nome: ${p.nome}`);
         continue;
       }
@@ -423,10 +423,10 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
       const variacoes: Partial<IProdutoERP & { itens: ISSGetCombosItens[] }>[] = allVariacoes.dados
         .filter((v) => v.produto_id == p.produto_id)
         .map((v) => ({
-          erp_v_name: v.descricao,
+          erp_v_name: Util.Texto.truncarTexto(Util.Texto.tratarComoString(v.descricao), 100),
           erp_v_required: !!(v.quantidade_minima && v.quantidade_minima > 0),
-          erp_v_items_min: v.quantidade_minima,
-          erp_v_items_max: v.quantidade_maxima,
+          erp_v_items_min: v.quantidade_minima ?? 0,
+          erp_v_items_max: v.quantidade_maxima ?? 0,
           erp_v_availability: 'AVAILABLE',
           erp_v_ordem: typeof v.ordem == 'number' ? v.ordem : 0,
           itens: v.itens,
@@ -437,15 +437,13 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
           ...modeloProduct,
           type: 'VARIATION_HEADER',
           empresa_id: empresaId,
-          erp_v_name: v.erp_v_name,
+          erp_v_name: Util.Texto.truncarTexto(Util.Texto.tratarComoString(v.erp_v_name), 100),
           erp_v_required: v.erp_v_required,
           erp_v_items_min: v.erp_v_items_min,
           erp_v_items_max: v.erp_v_items_max,
           erp_v_availability: v.erp_v_availability,
           erp_v_ordem: v.erp_v_ordem,
-          erp_v_name_hash: Util.Texto.gerarHashTexto(
-            Util.Texto.formatarParaTextoSimples(Util.Texto.truncarTexto(`${modeloProduct.erp_p_code}${v.erp_v_name}`, 100) || ''),
-          ),
+          erp_v_name_hash: Util.Texto.gerarHashTexto(Util.Texto.formatarParaTextoSimples(`${modeloProduct.erp_p_code}${v.erp_v_name}`)),
         };
 
         const resultVariacao = await Repositorios.ProdutosERP.inserir(modeloVariation);
@@ -474,8 +472,8 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
               type: 'VARIATION_ITEM',
               empresa_id: empresaId,
               erp_vi_code: vi.codigo_pdv,
-              erp_vi_name: produtoItemCombo.nome,
-              erp_vi_value: Number(Util.Texto.tratarComoNumero(vi.preco_venda)?.toFixed(2)) || 0,
+              erp_vi_name: Util.Texto.truncarTexto(Util.Texto.tratarComoString(produtoItemCombo.nome), 100),
+              erp_vi_value: Util.Texto.tratarComoNumero(vi.preco_venda) ?? 0,
               erp_vi_availability: 'AVAILABLE',
               erp_vi_stock_current: 0,
               erp_vi_stock_active: false,
