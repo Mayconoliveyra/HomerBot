@@ -853,7 +853,7 @@ const atEstoqueVariacao = async (empresaId: number, variacoes: { variationId: st
 const zerarCadastros = async (empresaId: number, merchantId: string): Promise<IRetornoServico<string>> => {
   try {
     const allCategoriasMc = await getCategorias(empresaId, merchantId);
-    if (!allCategoriasMc.sucesso || !allCategoriasMc.dados) {
+    if (!allCategoriasMc.sucesso) {
       return {
         sucesso: false,
         dados: null,
@@ -864,7 +864,7 @@ const zerarCadastros = async (empresaId: number, merchantId: string): Promise<IR
     for (const categoria of allCategoriasMc.dados) {
       const resDeleteCategoriaPorId = await deleteCategoriaPorId(empresaId, categoria.id);
 
-      if (!resDeleteCategoriaPorId.sucesso || !resDeleteCategoriaPorId.dados) {
+      if (!resDeleteCategoriaPorId.sucesso) {
         return {
           sucesso: false,
           dados: null,
@@ -875,7 +875,7 @@ const zerarCadastros = async (empresaId: number, merchantId: string): Promise<IR
 
     return {
       sucesso: true,
-      dados: 'Sucesso!',
+      dados: Util.Msg.sucesso,
       erro: null,
     };
   } catch (error) {
@@ -905,7 +905,7 @@ const alimentarProdutos = async (empresaId: number, merchantId: string): Promise
 
     // ### CATEGORIAS ####
     const allCategorias = await getCategorias(empresaId, merchantId);
-    if (!allCategorias.sucesso || !allCategorias.dados) {
+    if (!allCategorias.sucesso) {
       return {
         sucesso: false,
         dados: null,
@@ -916,7 +916,7 @@ const alimentarProdutos = async (empresaId: number, merchantId: string): Promise
 
     // ### PRODUTOS ####
     const allProdutosMc = await getProdutos(empresaId);
-    if (!allProdutosMc.sucesso || !allProdutosMc.dados) {
+    if (!allProdutosMc.sucesso) {
       return {
         sucesso: false,
         dados: null,
