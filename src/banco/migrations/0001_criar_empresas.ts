@@ -13,6 +13,8 @@ export async function up(knex: Knex) {
       table.string('nome', 255).notNullable();
       table.string('cnpj_cpf', 50).notNullable().unique();
 
+      table.enum('erp', ['SOFTSHOP', 'SOFTCOMSHOP']).notNullable();
+
       table.text('ss_qrcode_url');
       table.string('ss_url', 255);
       table.string('ss_client_id', 255);

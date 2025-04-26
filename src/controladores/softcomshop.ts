@@ -42,12 +42,12 @@ const configuracao = async (req: Request<{}, {}, IBodyProps>, res: Response) => 
 
   const empresa = await Repositorios.Empresa.buscarPorId(empresa_id);
 
-  if (!empresa) {
-    return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: 'Empresa não encontrada.' } });
+  if (!empresa.sucesso) {
+    return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: empresa.erro } });
   }
 
-  if (erp_url === empresa.ss_qrcode_url && empresa.ss_url && empresa.ss_client_id && empresa.ss_client_secret) {
-    const resToken = await Servicos.SoftcomShop.criarToken(empresa.ss_url, empresa.ss_client_id, empresa.ss_client_secret);
+  if (erp_url === empresa.dados.ss_qrcode_url && empresa.dados.ss_url && empresa.dados.ss_client_id && empresa.dados.ss_client_secret) {
+    const resToken = await Servicos.SoftcomShop.criarToken(empresa.dados.ss_url, empresa.dados.ss_client_id, empresa.dados.ss_client_secret);
 
     if (!resToken.sucesso || !resToken.dados) {
       await limparConfigSS(empresa_id);

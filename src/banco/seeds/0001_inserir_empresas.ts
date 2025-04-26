@@ -16,6 +16,7 @@ export const seed = async (knex: Knex) => {
         registro: '1',
         nome: 'EMPRESA TESTE',
         cnpj_cpf: '1',
+        erp: 'SOFTCOMSHOP',
         ativo: true,
       },
       {
@@ -23,6 +24,7 @@ export const seed = async (knex: Knex) => {
         registro: '2',
         nome: 'EMPRESA TESTE 002',
         cnpj_cpf: '2',
+        erp: 'SOFTCOMSHOP',
         ativo: true,
       },
       {
@@ -30,6 +32,7 @@ export const seed = async (knex: Knex) => {
         registro: '3',
         nome: 'EMPRESA TESTE 003',
         cnpj_cpf: '3',
+        erp: 'SOFTCOMSHOP',
         ativo: true,
       },
       {
@@ -37,6 +40,7 @@ export const seed = async (knex: Knex) => {
         registro: '4',
         nome: 'EMPRESA TESTE 004',
         cnpj_cpf: '4',
+        erp: 'SOFTCOMSHOP',
         ativo: true,
       },
       {
@@ -44,6 +48,7 @@ export const seed = async (knex: Knex) => {
         registro: '5',
         nome: 'EMPRESA TESTE 005',
         cnpj_cpf: '5',
+        erp: 'SOFTCOMSHOP',
         ativo: false,
       },
     ])

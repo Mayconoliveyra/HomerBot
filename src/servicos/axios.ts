@@ -53,17 +53,17 @@ const axiosMeuCarrinho = async (empresaId: number) => {
   try {
     const empresa = await Repositorios.Empresa.buscarPorId(empresaId);
 
-    if (!empresa) {
-      return 'Empresa não encontrada.';
+    if (!empresa.sucesso) {
+      return empresa.erro;
     }
 
-    if (!empresa.mc_usuario || !empresa.mc_senha || !empresa.mc_token) {
-      return `Os parâmetros são obrigatórios: MC_USUARIO:${empresa.mc_usuario}; MC_SENHA:${empresa.mc_senha}; MC_TOKEN:${empresa.mc_token};`;
+    if (!empresa.dados.mc_usuario || !empresa.dados.mc_senha || !empresa.dados.mc_token) {
+      return `Os parâmetros são obrigatórios: MC_USUARIO:${empresa.dados.mc_usuario}; MC_SENHA:${empresa.dados.mc_senha}; MC_TOKEN:${empresa.dados.mc_token};`;
     }
 
     const timeCurrent = Math.floor(Date.now() / 1000);
-    if (timeCurrent > empresa.mc_token_exp) {
-      const resToken = await Servicos.MeuCarrinho.autenticar(empresa.mc_usuario || '', empresa.mc_senha || '');
+    if (timeCurrent > empresa.dados.mc_token_exp) {
+      const resToken = await Servicos.MeuCarrinho.autenticar(empresa.dados.mc_usuario || '', empresa.dados.mc_senha || '');
 
       if (!resToken.sucesso) {
         return resToken.erro;
@@ -87,7 +87,7 @@ const axiosMeuCarrinho = async (empresaId: number) => {
 
     return Axios.createAxiosInstance({
       baseURL: 'https://api.meucarrinho.delivery',
-      headers: { Authorization: `Bearer ${empresa.mc_token || ''}`, 'Content-Type': 'application/json' },
+      headers: { Authorization: `Bearer ${empresa.dados.mc_token || ''}`, 'Content-Type': 'application/json' },
       timeout: DEFAULT_TIMEOUT_MC,
     });
   } catch (error) {
@@ -101,17 +101,17 @@ const axiosSoftcomshop = async (empresaId: number) => {
   try {
     const empresa = await Repositorios.Empresa.buscarPorId(empresaId);
 
-    if (!empresa) {
-      return 'Empresa não encontrada.';
+    if (!empresa.sucesso) {
+      return empresa.erro;
     }
 
-    if (!empresa.ss_url || !empresa.ss_client_id || !empresa.ss_client_secret || !empresa.ss_token) {
-      return `Os parâmetros são obrigatórios: SS_URL:${empresa.ss_url}; SS_CLIENT_ID:${empresa.ss_client_id}; SS_CLIENT_SECRET:${empresa.ss_client_secret} SS_TOKEN:${empresa.ss_token};`;
+    if (!empresa.dados.ss_url || !empresa.dados.ss_client_id || !empresa.dados.ss_client_secret || !empresa.dados.ss_token) {
+      return `Os parâmetros são obrigatórios: SS_URL:${empresa.dados.ss_url}; SS_CLIENT_ID:${empresa.dados.ss_client_id}; SS_CLIENT_SECRET:${empresa.dados.ss_client_secret} SS_TOKEN:${empresa.dados.ss_token};`;
     }
 
     const timeCurrent = Math.floor(Date.now() / 1000);
-    if (timeCurrent > empresa.ss_token_exp) {
-      const resToken = await Servicos.SoftcomShop.criarToken(empresa.ss_url, empresa.ss_client_id, empresa.ss_client_secret);
+    if (timeCurrent > empresa.dados.ss_token_exp) {
+      const resToken = await Servicos.SoftcomShop.criarToken(empresa.dados.ss_url, empresa.dados.ss_client_id, empresa.dados.ss_client_secret);
 
       if (!resToken.sucesso) {
         return resToken.erro;
@@ -127,15 +127,15 @@ const axiosSoftcomshop = async (empresaId: number) => {
       }
 
       return Axios.createAxiosInstance({
-        baseURL: empresa.ss_url,
+        baseURL: empresa.dados.ss_url,
         headers: { Authorization: `Bearer ${resToken.dados.token}`, 'Content-Type': 'application/json' },
         timeout: DEFAULT_TIMEOUT_SS,
       });
     }
 
     return Axios.createAxiosInstance({
-      baseURL: empresa.ss_url,
-      headers: { Authorization: `Bearer ${empresa.ss_token}`, 'Content-Type': 'application/json' },
+      baseURL: empresa.dados.ss_url,
+      headers: { Authorization: `Bearer ${empresa.dados.ss_token}`, 'Content-Type': 'application/json' },
       timeout: DEFAULT_TIMEOUT_SS,
     });
   } catch (error) {

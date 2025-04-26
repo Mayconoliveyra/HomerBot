@@ -5,6 +5,8 @@ export interface IEmpresa {
   nome: string;
   cnpj_cpf: string;
 
+  erp: 'SOFTSHOP' | 'SOFTCOMSHOP';
+
   ss_qrcode_url?: string | null;
   ss_url?: string | null;
   ss_client_id?: string | null;

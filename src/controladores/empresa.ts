@@ -18,6 +18,7 @@ export type IBodyCadastrarProps = {
   registro: string;
   nome: string;
   cnpj_cpf: string;
+  erp: 'SOFTSHOP' | 'SOFTCOMSHOP';
 };
 
 const formatarCpfCnpj = (valor: string): string => {
@@ -101,10 +102,38 @@ const cadastrarValidacao = Middlewares.validacao((getSchema) => ({
         .required()
         .trim()
         .test('cpf-cnpj', 'CPF ou CNPJ inválido', (valor) => !!valor && isCpfOrCnpj(valor)),
+      erp: yup.string().oneOf(['SOFTSHOP', 'SOFTCOMSHOP']).required(),
     }),
   ),
 }));
 const cadastrar = async (req: Request<{}, {}, IBodyCadastrarProps>, res: Response) => {
+  const { registro, nome, cnpj_cpf, erp } = req.body;
+
+  const existe = await Repositorios.Empresa.buscarPorRegistroOuDocumento(registro, cnpj_cpf);
+  if (existe && existe.registro == registro) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      errors: { default: 'Já existe uma empresa com este registro.' },
+    });
+  }
+
+  if (existe && existe.cnpj_cpf == cnpj_cpf) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      errors: { default: 'Já existe uma empresa com este CNPJ/CPF.' },
+    });
+  }
+
+  const result = await Repositorios.Empresa.cadastrar({ registro, nome, cnpj_cpf, erp });
+
+  if (result) {
+    return res.status(StatusCodes.NO_CONTENT).send();
+  } else {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      errors: { default: 'Erro ao cadastrar empresa.' },
+    });
+  }
+};
+
+/* const editar = async (req: Request<{}, {}, IBodyCadastrarProps>, res: Response) => {
   const { registro, nome, cnpj_cpf } = req.body;
 
   const existe = await Repositorios.Empresa.buscarPorRegistroOuDocumento(registro, cnpj_cpf);
@@ -129,7 +158,7 @@ const cadastrar = async (req: Request<{}, {}, IBodyCadastrarProps>, res: Respons
       errors: { default: 'Erro ao cadastrar empresa.' },
     });
   }
-};
+}; */
 
 export const Empresa = {
   consultarValidacao,
