@@ -9,11 +9,9 @@ import { IFiltro, IRetorno } from '../util/padroes';
 
 const MODULO = '[Empresa]';
 
-const atualizarDados = async (empresaId: number, data: Partial<IEmpresa>): Promise<IRetorno<string>> => {
+const cadastrar = async (empresa: IBodyCadastrarProps): Promise<IRetorno<string>> => {
   try {
-    const result = await Knex(ETableNames.empresas)
-      .where('id', '=', empresaId)
-      .update({ ...data });
+    const result = await Knex(ETableNames.empresas).insert(empresa);
 
     if (result) {
       return {
@@ -31,7 +29,7 @@ const atualizarDados = async (empresaId: number, data: Partial<IEmpresa>): Promi
       };
     }
   } catch (error) {
-    Util.Log.error(`${MODULO} | Erro ao atualizar dados da empresa`, error);
+    Util.Log.error(`${MODULO} | Erro ao realizar cadastro.`, error);
 
     return {
       sucesso: false,
@@ -85,7 +83,7 @@ const consultar = async (pagina: number, limite: number, filtro: string, ordenar
       total: Number(countResult[0]?.count || 0),
     };
   } catch (error) {
-    Util.Log.error(`${MODULO} | Erro ao consultar empresas`, error);
+    Util.Log.error(`${MODULO} | Erro ao consultar.`, error);
 
     return {
       sucesso: false,
@@ -133,44 +131,37 @@ const consultarPrimeiroRegistro = async (filtros: IFiltro<IEmpresa>[]): Promise<
   }
 };
 
-/* const buscarPorId = async (empresaId: number): Promise<IRetorno<IEmpresa>> => {
-  const result = await Knex(ETableNames.empresas).where('id', '=', empresaId).first();
+const atualizarDados = async (empresaId: number, data: Partial<IEmpresa>): Promise<IRetorno<string>> => {
+  try {
+    const result = await Knex(ETableNames.empresas)
+      .where('id', '=', empresaId)
+      .update({ ...data });
 
-  if (result) {
-    return {
-      sucesso: true,
-      dados: result,
-      erro: null,
-      total: 1,
-    };
-  } else {
+    if (result) {
+      return {
+        sucesso: true,
+        dados: Util.Msg.sucesso,
+        erro: null,
+        total: 1,
+      };
+    } else {
+      return {
+        sucesso: false,
+        dados: null,
+        erro: Util.Msg.erroInesperado,
+        total: 0,
+      };
+    }
+  } catch (error) {
+    Util.Log.error(`${MODULO} | Erro ao atualizar dados.`, error);
+
     return {
       sucesso: false,
       dados: null,
-      erro: 'Empresa não encontrada',
+      erro: Util.Msg.erroInesperado,
       total: 0,
     };
   }
 };
 
-const buscarPorRegistroOuDocumento = async (registro: string, cnpj_cpf: string): Promise<IEmpresa | undefined> => {
-  try {
-    const result = await Knex(ETableNames.empresas).where('registro', registro).orWhere('cnpj_cpf', cnpj_cpf).first();
-
-    return result;
-  } catch (error) {
-    Util.Log.error('Erro ao verificar empresa existente', error);
-    return undefined;
-  }
-};
- */
-const cadastrar = async (empresa: IBodyCadastrarProps) => {
-  try {
-    return await Knex(ETableNames.empresas).insert(empresa);
-  } catch (error) {
-    Util.Log.error('Erro ao cadastrar empresa', error);
-    return false;
-  }
-};
-
-export const Empresa = { consultar, atualizarDados, cadastrar, consultarPrimeiroRegistro };
+export const Empresa = { cadastrar, consultar, consultarPrimeiroRegistro, atualizarDados };

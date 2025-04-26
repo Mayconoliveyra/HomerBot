@@ -13,14 +13,12 @@ interface IQueryProps {
   ordenarPor?: string;
   ordem?: string;
 }
-
 export type IBodyCadastrarProps = {
   registro: string;
   nome: string;
   cnpj_cpf: string;
   erp: 'SOFTSHOP' | 'SOFTCOMSHOP';
 };
-
 export type IBodyEditarProps = {
   nome: string;
   cnpj_cpf: string;
@@ -39,58 +37,6 @@ const formatarCpfCnpj = (valor: string): string => {
     return valor; // Se não for CPF nem CNPJ, retorna do jeito que está
   }
 };
-
-const consultarValidacao = Middlewares.validacao((getSchema) => ({
-  query: getSchema<IQueryProps>(
-    yup.object().shape({
-      pagina: yup.number().integer().moreThan(0).default(1),
-      limite: yup.number().integer().moreThan(0).max(500).default(10),
-      filtro: yup.string().max(255).optional(),
-      ordenarPor: yup.string().max(100).optional().default('nome'),
-      ordem: yup.string().max(100).optional().default('asc'),
-    }),
-  ),
-}));
-
-const consultarPorIdValidacao = Middlewares.validacao((getSchema) => ({
-  params: getSchema<{ empresaId: number }>(
-    yup.object().shape({
-      empresaId: yup.number().integer().required(),
-    }),
-  ),
-}));
-
-const consultar = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) => {
-  const { pagina = 1, limite = 10, filtro = '', ordenarPor = 'nome', ordem = 'asc' } = req.query;
-
-  const result = await Repositorios.Empresa.consultar(pagina, limite, filtro, ordenarPor, ordem);
-
-  if (!result.sucesso) {
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      errors: { default: result.erro },
-    });
-  }
-
-  const totalPaginas = Math.ceil(result.total / limite);
-
-  return res.status(StatusCodes.OK).json({
-    dados: result.dados.map((item) => ({ ...item, cnpj_cpf: formatarCpfCnpj(item.cnpj_cpf) })),
-    totalRegistros: result.total,
-    totalPaginas: totalPaginas,
-  });
-};
-
-const consultarPorId = async (req: Request<{ empresaId: string }>, res: Response) => {
-  const empresaId = req.params.empresaId as unknown as number;
-
-  const empresa = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'id', operador: '=', valor: empresaId }]);
-  if (!empresa.sucesso) {
-    return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: empresa.erro } });
-  }
-
-  return res.status(StatusCodes.OK).json({ ...empresa.dados, cnpj_cpf: formatarCpfCnpj(empresa.dados.cnpj_cpf) });
-};
-
 const isCpfOrCnpj = (valor: string): boolean => {
   if (!valor) return false;
 
@@ -113,35 +59,24 @@ const cadastrarValidacao = Middlewares.validacao((getSchema) => ({
     }),
   ),
 }));
-
-const cadastrar = async (req: Request<{}, {}, IBodyCadastrarProps>, res: Response) => {
-  const { registro, nome, cnpj_cpf, erp } = req.body;
-
-  const registroExistente = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'registro', operador: '=', valor: registro }]);
-  if (registroExistente.sucesso) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      errors: { default: 'Já existe uma empresa com este registro.' },
-    });
-  }
-
-  const cnpjCpfExistente = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'cnpj_cpf', operador: '=', valor: registro }]);
-  if (cnpjCpfExistente.sucesso) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      errors: { default: 'Já existe uma empresa com este CNPJ/CPF.' },
-    });
-  }
-
-  const result = await Repositorios.Empresa.cadastrar({ registro, nome, cnpj_cpf, erp });
-
-  if (result) {
-    return res.status(StatusCodes.NO_CONTENT).send();
-  } else {
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      errors: { default: 'Erro ao cadastrar empresa.' },
-    });
-  }
-};
-
+const consultarValidacao = Middlewares.validacao((getSchema) => ({
+  query: getSchema<IQueryProps>(
+    yup.object().shape({
+      pagina: yup.number().integer().moreThan(0).default(1),
+      limite: yup.number().integer().moreThan(0).max(500).default(10),
+      filtro: yup.string().max(255).optional(),
+      ordenarPor: yup.string().max(100).optional().default('nome'),
+      ordem: yup.string().max(100).optional().default('asc'),
+    }),
+  ),
+}));
+const consultarPorIdValidacao = Middlewares.validacao((getSchema) => ({
+  params: getSchema<{ empresaId: number }>(
+    yup.object().shape({
+      empresaId: yup.number().integer().required(),
+    }),
+  ),
+}));
 const editarValidacao = Middlewares.validacao((getSchema) => ({
   params: getSchema<{ empresaId: number }>(
     yup.object().shape({
@@ -162,6 +97,62 @@ const editarValidacao = Middlewares.validacao((getSchema) => ({
   ),
 }));
 
+const cadastrar = async (req: Request<{}, {}, IBodyCadastrarProps>, res: Response) => {
+  const { registro, nome, cnpj_cpf, erp } = req.body;
+
+  const registroExistente = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'registro', operador: '=', valor: registro }]);
+  if (registroExistente.sucesso) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      errors: { default: 'Já existe uma empresa com este registro.' },
+    });
+  }
+
+  const cnpjCpfExistente = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'cnpj_cpf', operador: '=', valor: registro }]);
+  if (cnpjCpfExistente.sucesso) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      errors: { default: 'Já existe uma empresa com este CNPJ/CPF.' },
+    });
+  }
+
+  const resultCadastrar = await Repositorios.Empresa.cadastrar({ registro, nome, cnpj_cpf, erp });
+
+  if (resultCadastrar.sucesso) {
+    return res.status(StatusCodes.NO_CONTENT).send();
+  } else {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      errors: { default: resultCadastrar.erro },
+    });
+  }
+};
+const consultar = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) => {
+  const { pagina = 1, limite = 10, filtro = '', ordenarPor = 'nome', ordem = 'asc' } = req.query;
+
+  const result = await Repositorios.Empresa.consultar(pagina, limite, filtro, ordenarPor, ordem);
+
+  if (!result.sucesso) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      errors: { default: result.erro },
+    });
+  }
+
+  const totalPaginas = Math.ceil(result.total / limite);
+
+  return res.status(StatusCodes.OK).json({
+    dados: result.dados.map((item) => ({ ...item, cnpj_cpf: formatarCpfCnpj(item.cnpj_cpf) })),
+    totalRegistros: result.total,
+    totalPaginas: totalPaginas,
+  });
+};
+const consultarPorId = async (req: Request<{ empresaId: string }>, res: Response) => {
+  const empresaId = req.params.empresaId as unknown as number;
+
+  const empresa = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'id', operador: '=', valor: empresaId }]);
+  if (!empresa.sucesso) {
+    return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: empresa.erro } });
+  }
+
+  return res.status(StatusCodes.OK).json({ ...empresa.dados, cnpj_cpf: formatarCpfCnpj(empresa.dados.cnpj_cpf) });
+};
 const editar = async (req: Request<{ empresaId: string }, {}, IBodyEditarProps>, res: Response) => {
   const { nome, cnpj_cpf, erp, ativo } = req.body;
   const empresaId = req.params.empresaId as unknown as number;
@@ -183,23 +174,23 @@ const editar = async (req: Request<{ empresaId: string }, {}, IBodyEditarProps>,
     });
   }
 
-  const result = await Repositorios.Empresa.atualizarDados(empresaId, { nome, cnpj_cpf, erp, ativo });
-  if (result.sucesso) {
-    return res.status(StatusCodes.NO_CONTENT).send();
+  const resultAtualizar = await Repositorios.Empresa.atualizarDados(empresaId, { nome, cnpj_cpf, erp, ativo });
+  if (resultAtualizar.sucesso) {
+    return res.status(StatusCodes.OK).send();
   } else {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      errors: { default: result.erro },
+      errors: { default: resultAtualizar.erro },
     });
   }
 };
 
 export const Empresa = {
-  consultarValidacao,
-  consultar,
-  consultarPorIdValidacao,
-  consultarPorId,
   cadastrarValidacao,
-  cadastrar,
+  consultarValidacao,
+  consultarPorIdValidacao,
   editarValidacao,
+  cadastrar,
+  consultar,
+  consultarPorId,
   editar,
 };
