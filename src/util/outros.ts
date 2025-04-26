@@ -1,6 +1,6 @@
 import { Util } from '.';
 
-export function ehObjetoValido<T extends object>(objeto: T, colunasIgnoradas: Array<keyof T> = []): boolean {
+function ehObjetoValido<T extends object>(objeto: T, colunasIgnoradas: Array<keyof T> = []): boolean {
   try {
     return Object.entries(objeto).every(([chave, valor]) => {
       if (colunasIgnoradas.includes(chave as keyof T)) return true;

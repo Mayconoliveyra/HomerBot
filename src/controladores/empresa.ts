@@ -2,8 +2,6 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import * as yup from 'yup';
 
-import { IEmpresa } from '../banco/models/empresa';
-
 import { Middlewares } from '../middlewares';
 
 import { Repositorios } from '../repositorios';
@@ -20,6 +18,18 @@ export type IBodyCadastrarProps = {
   registro: string;
   nome: string;
   cnpj_cpf: string;
+};
+
+const formatarCpfCnpj = (valor: string): string => {
+  if (valor.length === 11) {
+    // Formata CPF: 000.000.000-00
+    return valor.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  } else if (valor.length === 14) {
+    // Formata CNPJ: 00.000.000/0000-00
+    return valor.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+  } else {
+    return valor; // Se não for CPF nem CNPJ, retorna do jeito que está
+  }
 };
 
 const consultarValidacao = Middlewares.validacao((getSchema) => ({
@@ -47,16 +57,16 @@ const consultar = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) =
 
   const result = await Repositorios.Empresa.consultar(pagina, limite, filtro, ordenarPor, ordem);
 
-  if (result === false) {
+  if (!result.sucesso) {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      errors: { default: 'Erro ao consultar empresas' },
+      errors: { default: result.erro },
     });
   }
 
   const totalPaginas = Math.ceil(result.total / limite);
 
   return res.status(StatusCodes.OK).json({
-    dados: result.empresas,
+    dados: result.dados.map((item) => ({ ...item, cnpj_cpf: formatarCpfCnpj(item.cnpj_cpf) })),
     totalRegistros: result.total,
     totalPaginas: totalPaginas,
   });
@@ -66,11 +76,11 @@ const consultarPorId = async (req: Request<{ empresaId: string }>, res: Response
   const empresaId = req.params.empresaId as unknown as number;
 
   const empresa = await Repositorios.Empresa.buscarPorId(empresaId);
-  if (!empresa) {
-    return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: 'Empresa não encontrada.' } });
+  if (!empresa.sucesso) {
+    return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: empresa.erro } });
   }
 
-  return res.status(StatusCodes.OK).json(empresa);
+  return res.status(StatusCodes.OK).json({ ...empresa.dados, cnpj_cpf: formatarCpfCnpj(empresa.dados.cnpj_cpf) });
 };
 
 const isCpfOrCnpj = (valor: string): boolean => {

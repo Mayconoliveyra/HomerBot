@@ -5,6 +5,7 @@ import { IEmpresa } from '../banco/models/empresa';
 import { IBodyCadastrarProps } from '../controladores/empresa';
 
 import { Util } from '../util';
+import { IRetorno } from '../util/padroes';
 
 const atualizarDados = async (empresaId: number, data: Partial<IEmpresa>) => {
   try {
@@ -17,7 +18,7 @@ const atualizarDados = async (empresaId: number, data: Partial<IEmpresa>) => {
   }
 };
 
-const consultar = async (pagina: number, limite: number, filtro: string, ordenarPor: string, ordem: string) => {
+const consultar = async (pagina: number, limite: number, filtro: string, ordenarPor: string, ordem: string): Promise<IRetorno<IEmpresa[]>> => {
   try {
     const offset = (pagina - 1) * limite;
 
@@ -29,7 +30,7 @@ const consultar = async (pagina: number, limite: number, filtro: string, ordenar
     const colunaOrdenada = nomesColunas.includes(ordenarPor) ? ordenarPor : 'nome';
 
     // Dados
-    const empresas = await Knex(ETableNames.empresas)
+    const empresas = (await Knex(ETableNames.empresas)
       .select('*')
       .modify((queryBuilder) => {
         if (filtro) {
@@ -40,7 +41,7 @@ const consultar = async (pagina: number, limite: number, filtro: string, ordenar
       })
       .orderBy(colunaOrdenada, colunaOrdem)
       .limit(limite)
-      .offset(offset);
+      .offset(offset)) as IEmpresa[];
 
     // Total registros
     const countResult = await Knex(ETableNames.empresas)
@@ -54,17 +55,41 @@ const consultar = async (pagina: number, limite: number, filtro: string, ordenar
       .count('id as count');
 
     return {
+      sucesso: true,
+      dados: empresas,
+      erro: null,
       total: Number(countResult[0]?.count || 0),
-      empresas,
     };
   } catch (error) {
     Util.Log.error('Erro ao consultar empresas', error);
-    return false;
+
+    return {
+      sucesso: false,
+      dados: null,
+      erro: Util.Msg.erroInesperado,
+      total: 0,
+    };
   }
 };
 
-const buscarPorId = async (empresaId: number) => {
-  return await Knex(ETableNames.empresas).where('id', '=', empresaId).first();
+const buscarPorId = async (empresaId: number): Promise<IRetorno<IEmpresa>> => {
+  const result = await Knex(ETableNames.empresas).where('id', '=', empresaId).first();
+
+  if (result) {
+    return {
+      sucesso: true,
+      dados: result,
+      erro: null,
+      total: 1,
+    };
+  } else {
+    return {
+      sucesso: false,
+      dados: null,
+      erro: 'Empresa não encontrada',
+      total: 0,
+    };
+  }
 };
 
 const buscarPorRegistroOuDocumento = async (registro: string, cnpj_cpf: string): Promise<IEmpresa | undefined> => {
