@@ -17,6 +17,7 @@ export const seed = async (knex: Knex) => {
         descricao:
           'Exporte facilmente as mercadorias do Softcomshop para o Meu Carrinho. Serão transferidas as informações cadastradas: categorias, produto principal, combos e variações.',
         simultaneamente: true,
+        modal_nome: 'TarefaDataSyncFoodMC',
         ativo: true,
       },
     ])

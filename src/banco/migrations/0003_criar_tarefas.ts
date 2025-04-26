@@ -13,6 +13,7 @@ export async function up(knex: Knex) {
       table.text('descricao').notNullable(); // Descrição detalhada
 
       table.boolean('simultaneamente').defaultTo(false); // Define se pode executar simultaneamente
+      table.string('modal_nome').notNullable();
       table.boolean('ativo').defaultTo(false); // Indicador se a automação está ativa
 
       /**

@@ -18,4 +18,6 @@ router.get('/empresa/:empresaId', Controladores.Empresa.consultarPorIdValidacao,
 router.post('/configuracoes/softcomshop', Controladores.SoftcomShop.configuracaoValidacao, Controladores.SoftcomShop.configuracao);
 router.post('/configuracoes/meu-carrinho', Controladores.MeuCarrinho.configuracaoValidacao, Controladores.MeuCarrinho.configuracao);
 
+router.get('/tarefa', Controladores.Tarefa.consultarValidacao, Controladores.Tarefa.consultar);
+
 export { router };

@@ -1,10 +1,9 @@
-export interface ITarefa {
+export interface ITarefaProcessar {
   id: number;
 
   nome: string;
   descricao: string;
   simultaneamente: boolean;
-  modal_nome: string;
   ativo: boolean;
 
   param_descricao?: string | null;
