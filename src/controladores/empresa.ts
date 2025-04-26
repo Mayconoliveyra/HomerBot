@@ -107,7 +107,7 @@ const cadastrar = async (req: Request<{}, {}, IBodyCadastrarProps>, res: Respons
     });
   }
 
-  const cnpjCpfExistente = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'cnpj_cpf', operador: '=', valor: registro }]);
+  const cnpjCpfExistente = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'cnpj_cpf', operador: '=', valor: cnpj_cpf }]);
   if (cnpjCpfExistente.sucesso) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       errors: { default: 'Já existe uma empresa com este CNPJ/CPF.' },
