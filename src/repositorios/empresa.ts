@@ -5,7 +5,7 @@ import { IEmpresa } from '../banco/models/empresa';
 import { IBodyCadastrarProps } from '../controladores/empresa';
 
 import { Util } from '../util';
-import { IRetorno } from '../util/padroes';
+import { IFiltro, IRetorno } from '../util/padroes';
 
 const MODULO = '[Empresa]';
 
@@ -96,9 +96,15 @@ const consultar = async (pagina: number, limite: number, filtro: string, ordenar
   }
 };
 
-const consultarPrimeiroRegistroPorColuna = async (coluna: keyof IEmpresa, valorBuscar: string): Promise<IRetorno<IEmpresa>> => {
+const consultarPrimeiroRegistro = async (filtros: IFiltro<IEmpresa>[]): Promise<IRetorno<IEmpresa>> => {
   try {
-    const result = await Knex.table(ETableNames.empresas).select('*').where(coluna, '=', valorBuscar).first();
+    const query = Knex.table(ETableNames.empresas).select('*');
+
+    filtros.forEach((filtro) => {
+      query.where(filtro.coluna, filtro.operador, filtro.valor);
+    });
+
+    const result = await query.first();
 
     if (result) {
       return {
@@ -111,15 +117,12 @@ const consultarPrimeiroRegistroPorColuna = async (coluna: keyof IEmpresa, valorB
       return {
         sucesso: false,
         dados: null,
-        erro: 'Empresa não encontrada',
+        erro: 'Nenhum registro foi encontrado.',
         total: 0,
       };
     }
   } catch (error) {
-    Util.Log.error(
-      `${MODULO} | Erro ao consultar primeiro registro por coluna: coluna:${coluna.toLowerCase()}; valorBuscar:${valorBuscar.toLowerCase()};`,
-      error,
-    );
+    Util.Log.error(`${MODULO} | Erro ao consultar primeiro registro com filtros: filtros:${JSON.stringify(filtros)}`, error);
 
     return {
       sucesso: false,
@@ -130,7 +133,7 @@ const consultarPrimeiroRegistroPorColuna = async (coluna: keyof IEmpresa, valorB
   }
 };
 
-const buscarPorId = async (empresaId: number): Promise<IRetorno<IEmpresa>> => {
+/* const buscarPorId = async (empresaId: number): Promise<IRetorno<IEmpresa>> => {
   const result = await Knex(ETableNames.empresas).where('id', '=', empresaId).first();
 
   if (result) {
@@ -160,7 +163,7 @@ const buscarPorRegistroOuDocumento = async (registro: string, cnpj_cpf: string):
     return undefined;
   }
 };
-
+ */
 const cadastrar = async (empresa: IBodyCadastrarProps) => {
   try {
     return await Knex(ETableNames.empresas).insert(empresa);
@@ -170,4 +173,4 @@ const cadastrar = async (empresa: IBodyCadastrarProps) => {
   }
 };
 
-export const Empresa = { consultar, buscarPorId, atualizarDados, buscarPorRegistroOuDocumento, cadastrar, consultarPrimeiroRegistroPorColuna };
+export const Empresa = { consultar, atualizarDados, cadastrar, consultarPrimeiroRegistro };

@@ -63,8 +63,8 @@ const consultar = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) =
 const consultarPorId = async (req: Request<{ empresaId: string }>, res: Response) => {
   const empresaId = req.params.empresaId as unknown as number;
 
-  const empresa = await Repositorios.Empresa.buscarPorId(empresaId);
-  if (!empresa) {
+  const empresa = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'id', operador: '=', valor: empresaId }]);
+  if (!empresa.sucesso) {
     return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: 'Empresa não encontrada.' } });
   }
 

@@ -40,7 +40,7 @@ const configuracaoValidacao = Middlewares.validacao((getSchema) => ({
 const configuracao = async (req: Request<{}, {}, IBodyProps>, res: Response) => {
   const { empresa_id, erp_url } = req.body;
 
-  const empresa = await Repositorios.Empresa.buscarPorId(empresa_id);
+  const empresa = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'id', operador: '=', valor: empresa_id }]);
 
   if (!empresa.sucesso) {
     return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: empresa.erro } });

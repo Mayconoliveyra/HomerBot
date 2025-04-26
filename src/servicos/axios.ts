@@ -51,7 +51,7 @@ export const createAxiosInstance = ({ baseURL, timeout = DEFAULT_TIMEOUT, header
 
 const axiosMeuCarrinho = async (empresaId: number) => {
   try {
-    const empresa = await Repositorios.Empresa.buscarPorId(empresaId);
+    const empresa = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'id', operador: '=', valor: empresaId }]);
 
     if (!empresa.sucesso) {
       return empresa.erro;
@@ -99,7 +99,7 @@ const axiosMeuCarrinho = async (empresaId: number) => {
 
 const axiosSoftcomshop = async (empresaId: number) => {
   try {
-    const empresa = await Repositorios.Empresa.buscarPorId(empresaId);
+    const empresa = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'id', operador: '=', valor: empresaId }]);
 
     if (!empresa.sucesso) {
       return empresa.erro;

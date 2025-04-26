@@ -41,9 +41,9 @@ const configuracaoValidacao = Middlewares.validacao((getSchema) => ({
 const configuracao = async (req: Request<{}, {}, IBodyProps>, res: Response) => {
   const { empresa_id, mc_usuario, mc_senha } = req.body;
 
-  const empresa = await Repositorios.Empresa.buscarPorId(empresa_id);
+  const empresa = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'id', operador: '=', valor: empresa_id }]);
 
-  if (!empresa) {
+  if (!empresa.sucesso) {
     return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: 'Empresa não encontrada.' } });
   }
 
@@ -101,9 +101,9 @@ const configuracao = async (req: Request<{}, {}, IBodyProps>, res: Response) => 
 const teste = async (req: Request, res: Response) => {
   const empresa_id = req.body?.empresa_id as number;
 
-  const empresa = await Repositorios.Empresa.buscarPorId(empresa_id);
+  const empresa = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'id', operador: '=', valor: empresa_id }]);
 
-  if (!empresa) {
+  if (!empresa.sucesso) {
     return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: 'Empresa não encontrada.' } });
   }
 

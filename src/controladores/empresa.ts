@@ -83,7 +83,7 @@ const consultar = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) =
 const consultarPorId = async (req: Request<{ empresaId: string }>, res: Response) => {
   const empresaId = req.params.empresaId as unknown as number;
 
-  const empresa = await Repositorios.Empresa.buscarPorId(empresaId);
+  const empresa = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'id', operador: '=', valor: empresaId }]);
   if (!empresa.sucesso) {
     return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: empresa.erro } });
   }
@@ -113,17 +113,19 @@ const cadastrarValidacao = Middlewares.validacao((getSchema) => ({
     }),
   ),
 }));
+
 const cadastrar = async (req: Request<{}, {}, IBodyCadastrarProps>, res: Response) => {
   const { registro, nome, cnpj_cpf, erp } = req.body;
 
-  const existe = await Repositorios.Empresa.buscarPorRegistroOuDocumento(registro, cnpj_cpf);
-  if (existe && existe.registro == registro) {
+  const registroExistente = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'registro', operador: '=', valor: registro }]);
+  if (registroExistente.sucesso) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       errors: { default: 'Já existe uma empresa com este registro.' },
     });
   }
 
-  if (existe && existe.cnpj_cpf == cnpj_cpf) {
+  const cnpjCpfExistente = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'cnpj_cpf', operador: '=', valor: registro }]);
+  if (cnpjCpfExistente.sucesso) {
     return res.status(StatusCodes.BAD_REQUEST).json({
       errors: { default: 'Já existe uma empresa com este CNPJ/CPF.' },
     });
@@ -164,17 +166,24 @@ const editar = async (req: Request<{ empresaId: string }, {}, IBodyEditarProps>,
   const { nome, cnpj_cpf, erp, ativo } = req.body;
   const empresaId = req.params.empresaId as unknown as number;
 
-  const existe = await Repositorios.Empresa.consultarPrimeiroRegistroPorColuna('cnpj_cpf', cnpj_cpf);
-  if (existe.sucesso) {
-    if (existe.dados.id != empresaId) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        errors: { default: 'Já existe uma empresa com este CNPJ/CPF.' },
-      });
-    }
+  const empresaIdExiste = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'id', operador: '=', valor: empresaId }]);
+  if (!empresaIdExiste.sucesso) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      errors: { default: empresaIdExiste.erro },
+    });
+  }
+
+  const cnpCpfValido = await Repositorios.Empresa.consultarPrimeiroRegistro([
+    { coluna: 'id', operador: '!=', valor: empresaId },
+    { coluna: 'cnpj_cpf', operador: '=', valor: cnpj_cpf },
+  ]);
+  if (cnpCpfValido.sucesso) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      errors: { default: 'Já existe uma empresa com este CNPJ/CPF.' },
+    });
   }
 
   const result = await Repositorios.Empresa.atualizarDados(empresaId, { nome, cnpj_cpf, erp, ativo });
-
   if (result.sucesso) {
     return res.status(StatusCodes.NO_CONTENT).send();
   } else {

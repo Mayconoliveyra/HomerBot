@@ -11,3 +11,11 @@ export type IRetorno<T = any> =
       erro: string;
       total: number;
     };
+
+export type IOperador = '=' | '!=' | '<' | '<=' | '>' | '>=' | 'like';
+
+export interface IFiltro<T> {
+  coluna: keyof T;
+  operador: IOperador;
+  valor: string | number;
+}
