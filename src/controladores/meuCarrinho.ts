@@ -87,11 +87,11 @@ const configuracao = async (req: Request<{}, {}, IBodyProps>, res: Response) => 
     mc_token_exp: resToken.dados.expiresAt,
   });
 
-  if (!resAtDados) {
+  if (!resAtDados.sucesso) {
     await limparConfigSS(empresa_id);
 
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      errors: { default: Util.Msg.erroInesperado },
+      errors: { default: resAtDados.erro },
     });
   }
 

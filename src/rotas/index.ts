@@ -13,6 +13,8 @@ router.get('/teste', Controladores.MeuCarrinho.teste);
 
 router.get('/empresa', Controladores.Empresa.consultarValidacao, Controladores.Empresa.consultar);
 router.post('/empresa', Controladores.Empresa.cadastrarValidacao, Controladores.Empresa.cadastrar);
+router.put('/empresa/:empresaId', Controladores.Empresa.editarValidacao, Controladores.Empresa.editar);
+
 router.get('/empresa/:empresaId', Controladores.Empresa.consultarPorIdValidacao, Controladores.Empresa.consultarPorId);
 
 router.post('/configuracoes/softcomshop', Controladores.SoftcomShop.configuracaoValidacao, Controladores.SoftcomShop.configuracao);

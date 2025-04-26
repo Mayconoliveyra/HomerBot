@@ -21,6 +21,13 @@ export type IBodyCadastrarProps = {
   erp: 'SOFTSHOP' | 'SOFTCOMSHOP';
 };
 
+export type IBodyEditarProps = {
+  nome: string;
+  cnpj_cpf: string;
+  erp: 'SOFTSHOP' | 'SOFTCOMSHOP';
+  ativo: boolean;
+};
+
 const formatarCpfCnpj = (valor: string): string => {
   if (valor.length === 11) {
     // Formata CPF: 000.000.000-00
@@ -133,32 +140,49 @@ const cadastrar = async (req: Request<{}, {}, IBodyCadastrarProps>, res: Respons
   }
 };
 
-/* const editar = async (req: Request<{}, {}, IBodyCadastrarProps>, res: Response) => {
-  const { registro, nome, cnpj_cpf } = req.body;
+const editarValidacao = Middlewares.validacao((getSchema) => ({
+  params: getSchema<{ empresaId: number }>(
+    yup.object().shape({
+      empresaId: yup.number().integer().required(),
+    }),
+  ),
+  body: getSchema<IBodyEditarProps>(
+    yup.object().shape({
+      nome: yup.string().required().trim().max(255),
+      cnpj_cpf: yup
+        .string()
+        .required()
+        .trim()
+        .test('cpf-cnpj', 'CPF ou CNPJ inválido', (valor) => !!valor && isCpfOrCnpj(valor)),
+      erp: yup.string().oneOf(['SOFTSHOP', 'SOFTCOMSHOP']).required(),
+      ativo: yup.boolean().required(),
+    }),
+  ),
+}));
 
-  const existe = await Repositorios.Empresa.buscarPorRegistroOuDocumento(registro, cnpj_cpf);
-  if (existe && existe.registro == registro) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      errors: { default: 'Já existe uma empresa com este registro.' },
-    });
+const editar = async (req: Request<{ empresaId: string }, {}, IBodyEditarProps>, res: Response) => {
+  const { nome, cnpj_cpf, erp, ativo } = req.body;
+  const empresaId = req.params.empresaId as unknown as number;
+
+  const existe = await Repositorios.Empresa.consultarPrimeiroRegistroPorColuna('cnpj_cpf', cnpj_cpf);
+  if (existe.sucesso) {
+    if (existe.dados.id != empresaId) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        errors: { default: 'Já existe uma empresa com este CNPJ/CPF.' },
+      });
+    }
   }
 
-  if (existe && existe.cnpj_cpf == cnpj_cpf) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      errors: { default: 'Já existe uma empresa com este CNPJ/CPF.' },
-    });
-  }
+  const result = await Repositorios.Empresa.atualizarDados(empresaId, { nome, cnpj_cpf, erp, ativo });
 
-  const result = await Repositorios.Empresa.cadastrar({ registro, nome, cnpj_cpf });
-
-  if (result) {
+  if (result.sucesso) {
     return res.status(StatusCodes.NO_CONTENT).send();
   } else {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      errors: { default: 'Erro ao cadastrar empresa.' },
+      errors: { default: result.erro },
     });
   }
-}; */
+};
 
 export const Empresa = {
   consultarValidacao,
@@ -167,4 +191,6 @@ export const Empresa = {
   consultarPorId,
   cadastrarValidacao,
   cadastrar,
+  editarValidacao,
+  editar,
 };

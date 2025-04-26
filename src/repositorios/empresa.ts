@@ -7,14 +7,38 @@ import { IBodyCadastrarProps } from '../controladores/empresa';
 import { Util } from '../util';
 import { IRetorno } from '../util/padroes';
 
-const atualizarDados = async (empresaId: number, data: Partial<IEmpresa>) => {
+const MODULO = '[Empresa]';
+
+const atualizarDados = async (empresaId: number, data: Partial<IEmpresa>): Promise<IRetorno<string>> => {
   try {
-    return await Knex(ETableNames.empresas)
+    const result = await Knex(ETableNames.empresas)
       .where('id', '=', empresaId)
       .update({ ...data });
+
+    if (result) {
+      return {
+        sucesso: true,
+        dados: Util.Msg.sucesso,
+        erro: null,
+        total: 1,
+      };
+    } else {
+      return {
+        sucesso: false,
+        dados: null,
+        erro: Util.Msg.erroInesperado,
+        total: 0,
+      };
+    }
   } catch (error) {
-    Util.Log.error('Erro ao atualizar dados da empresa', error);
-    return false;
+    Util.Log.error(`${MODULO} | Erro ao atualizar dados da empresa`, error);
+
+    return {
+      sucesso: false,
+      dados: null,
+      erro: Util.Msg.erroInesperado,
+      total: 0,
+    };
   }
 };
 
@@ -61,7 +85,41 @@ const consultar = async (pagina: number, limite: number, filtro: string, ordenar
       total: Number(countResult[0]?.count || 0),
     };
   } catch (error) {
-    Util.Log.error('Erro ao consultar empresas', error);
+    Util.Log.error(`${MODULO} | Erro ao consultar empresas`, error);
+
+    return {
+      sucesso: false,
+      dados: null,
+      erro: Util.Msg.erroInesperado,
+      total: 0,
+    };
+  }
+};
+
+const consultarPrimeiroRegistroPorColuna = async (coluna: keyof IEmpresa, valorBuscar: string): Promise<IRetorno<IEmpresa>> => {
+  try {
+    const result = await Knex.table(ETableNames.empresas).select('*').where(coluna, '=', valorBuscar).first();
+
+    if (result) {
+      return {
+        sucesso: true,
+        dados: result,
+        erro: null,
+        total: 1,
+      };
+    } else {
+      return {
+        sucesso: false,
+        dados: null,
+        erro: 'Empresa não encontrada',
+        total: 0,
+      };
+    }
+  } catch (error) {
+    Util.Log.error(
+      `${MODULO} | Erro ao consultar primeiro registro por coluna: coluna:${coluna.toLowerCase()}; valorBuscar:${valorBuscar.toLowerCase()};`,
+      error,
+    );
 
     return {
       sucesso: false,
@@ -112,4 +170,4 @@ const cadastrar = async (empresa: IBodyCadastrarProps) => {
   }
 };
 
-export const Empresa = { consultar, buscarPorId, atualizarDados, buscarPorRegistroOuDocumento, cadastrar };
+export const Empresa = { consultar, buscarPorId, atualizarDados, buscarPorRegistroOuDocumento, cadastrar, consultarPrimeiroRegistroPorColuna };

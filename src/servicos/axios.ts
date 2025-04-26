@@ -74,8 +74,8 @@ const axiosMeuCarrinho = async (empresaId: number) => {
         mc_token_exp: resToken.dados.expiresAt,
       });
 
-      if (!resAtDados) {
-        return Util.Msg.erroInesperado;
+      if (!resAtDados.sucesso) {
+        return resAtDados.erro;
       }
 
       return Axios.createAxiosInstance({
@@ -122,8 +122,8 @@ const axiosSoftcomshop = async (empresaId: number) => {
         ss_token_exp: resToken.dados.expiresAt,
       });
 
-      if (!resAtDados) {
-        return Util.Msg.erroInesperado;
+      if (!resAtDados.sucesso) {
+        return resAtDados.erro;
       }
 
       return Axios.createAxiosInstance({
