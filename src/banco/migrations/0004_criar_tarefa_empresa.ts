@@ -35,7 +35,7 @@ export async function up(knex: Knex) {
 
       table.text('erro').nullable();
 
-      table.enum('status', ['PENDENTE', 'PROCESSANDO', 'FINALIZADO', 'CONSULTAR', 'ERRO']).notNullable().defaultTo('PENDENTE'); // Status da tarefa
+      table.enum('status', ['PENDENTE', 'PROCESSANDO', 'FINALIZADO', 'CONSULTAR', 'CANCELADA', 'ERRO']).notNullable().defaultTo('PENDENTE'); // Status da tarefa
 
       table.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
       table.timestamp('updated_at').defaultTo(knex.raw('NULL ON UPDATE CURRENT_TIMESTAMP'));

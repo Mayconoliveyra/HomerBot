@@ -23,7 +23,7 @@ export interface ITarefaHistorico {
 
   erro?: string | null;
 
-  status: 'PENDENTE' | 'PROCESSANDO' | 'FINALIZADO' | 'CONSULTAR' | 'ERRO';
+  status: 'PENDENTE' | 'PROCESSANDO' | 'FINALIZADO' | 'CONSULTAR' | 'CANCELADA' | 'ERRO';
 
   created_at: string;
   updated_at?: string;

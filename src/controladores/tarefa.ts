@@ -7,6 +7,7 @@ import { Middlewares } from '../middlewares';
 import { Repositorios } from '../repositorios';
 
 interface IQueryProps {
+  empresaId?: number;
   pagina?: number;
   limite?: number;
   filtro?: string;
@@ -23,6 +24,7 @@ export type IBodyCadastrarProps = {
 const consultarValidacao = Middlewares.validacao((getSchema) => ({
   query: getSchema<IQueryProps>(
     yup.object().shape({
+      empresaId: yup.number().integer().moreThan(0).required(),
       pagina: yup.number().integer().moreThan(0).default(1),
       limite: yup.number().integer().moreThan(0).max(500).default(10),
       filtro: yup.string().max(255).optional(),
@@ -41,20 +43,25 @@ const consultarPorIdValidacao = Middlewares.validacao((getSchema) => ({
 }));
 
 const consultar = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) => {
-  const { pagina = 1, limite = 10, filtro = '', ordenarPor = 'nome', ordem = 'asc' } = req.query;
+  const { empresaId, pagina = 1, limite = 10, filtro = '', ordenarPor = 'nome', ordem = 'asc' } = req.query;
 
-  const result = await Repositorios.Tarefa.consultar(pagina, limite, filtro, ordenarPor, ordem);
+  const empresa = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'id', operador: '=', valor: empresaId as number }]);
+  if (!empresa.sucesso) {
+    return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: 'Empresa não encontrada.' } });
+  }
 
-  if (result === false) {
+  const result = await Repositorios.Tarefa.consultar(empresaId as number, pagina, limite, filtro, ordenarPor, ordem);
+
+  if (!result.sucesso) {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      errors: { default: 'Erro ao consultar tarefas' },
+      errors: { default: result.erro },
     });
   }
 
   const totalPaginas = Math.ceil(result.total / limite);
 
   return res.status(StatusCodes.OK).json({
-    dados: result.tarefas,
+    dados: result.dados,
     totalRegistros: result.total,
     totalPaginas: totalPaginas,
   });

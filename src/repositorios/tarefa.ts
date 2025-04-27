@@ -1,83 +1,181 @@
 import { ETableNames } from '../banco/eTableNames';
 import { Knex } from '../banco/knex';
-import { IEmpresa } from '../banco/models/empresa';
+import { ITarefa } from '../banco/models/tarefa';
+import { IVwTarefaEmpresa } from '../banco/models/vwTarefaEmpresa';
 
 import { IBodyCadastrarProps } from '../controladores/empresa';
 
 import { Util } from '../util';
+import { IFiltro, IRetorno } from '../util/padroes';
 
-const atualizarDados = async (empresaId: number, data: Partial<IEmpresa>) => {
+const MODULO = '[Tarefa]';
+
+const cadastrar = async (empresa: IBodyCadastrarProps): Promise<IRetorno<string>> => {
   try {
-    return await Knex(ETableNames.empresas)
-      .where('id', '=', empresaId)
-      .update({ ...data });
+    const result = await Knex(ETableNames.tarefas).insert(empresa);
+
+    if (result) {
+      return {
+        sucesso: true,
+        dados: Util.Msg.sucesso,
+        erro: null,
+        total: 1,
+      };
+    } else {
+      return {
+        sucesso: false,
+        dados: null,
+        erro: Util.Msg.erroInesperado,
+        total: 0,
+      };
+    }
   } catch (error) {
-    Util.Log.error('Erro ao atualizar dados da empresa', error);
-    return false;
+    Util.Log.error(`${MODULO} | Erro ao realizar cadastro.`, error);
+
+    return {
+      sucesso: false,
+      dados: null,
+      erro: Util.Msg.erroInesperado,
+      total: 0,
+    };
   }
 };
 
-const consultar = async (pagina: number, limite: number, filtro: string, ordenarPor: string, ordem: string) => {
+const consultar = async (
+  empresaId: number,
+  pagina: number,
+  limite: number,
+  filtro: string,
+  ordenarPor: string,
+  ordem: string,
+): Promise<IRetorno<IVwTarefaEmpresa[]>> => {
   try {
     const offset = (pagina - 1) * limite;
 
     // Valida se a coluna existe de fato na tabela
     const colunaOrdem = ordem && ordem.toLowerCase() === 'desc' ? 'desc' : 'asc';
 
-    const colunasTabela = await Knex(ETableNames.tarefas).columnInfo();
+    const colunasTabela = await Knex(ETableNames.vw_tarefas_empresas).columnInfo();
     const nomesColunas = Object.keys(colunasTabela);
-    const colunaOrdenada = nomesColunas.includes(ordenarPor) ? ordenarPor : 'nome';
+    const colunaOrdenada = nomesColunas.includes(ordenarPor) ? ordenarPor : 't_nome';
 
     // Dados
-    const tarefas = await Knex(ETableNames.tarefas)
-      .select('id', 'nome', 'descricao', 'modal_nome')
+    const tarefas = (await Knex(ETableNames.vw_tarefas_empresas)
+      .select('*')
+      .where('e_id', '=', empresaId)
+      .where('e_ativo', '=', true)
+      .where('t_ativo', '=', true)
       .modify((queryBuilder) => {
         if (filtro) {
           queryBuilder.where((qb) => {
-            qb.where('nome', 'like', `%${filtro}%`).orWhere('id', 'like', `%${filtro}%`);
+            qb.where('t_nome', 'like', `%${filtro}%`).orWhere('t_descricao', 'like', `%${filtro}%`);
           });
         }
       })
-      .where('ativo', '=', true)
       .orderBy(colunaOrdenada, colunaOrdem)
       .limit(limite)
-      .offset(offset);
+      .offset(offset)) as IVwTarefaEmpresa[];
 
     // Total registros
-    const countResult = await Knex(ETableNames.tarefas)
+    const countResult = await Knex(ETableNames.vw_tarefas_empresas)
+      .where('e_id', '=', empresaId)
+      .where('e_ativo', '=', true)
+      .where('t_ativo', '=', true)
       .modify((queryBuilder) => {
         if (filtro) {
           queryBuilder.where((qb) => {
-            qb.where('nome', 'like', `%${filtro}%`).orWhere('id', 'like', `%${filtro}%`);
+            qb.where('t_nome', 'like', `%${filtro}%`).orWhere('t_descricao', 'like', `%${filtro}%`);
           });
         }
       })
-      .where('ativo', '=', true)
-      .count('id as count');
+      .count('t_id as count');
 
     return {
+      sucesso: true,
+      dados: tarefas,
+      erro: null,
       total: Number(countResult[0]?.count || 0),
-      tarefas,
     };
   } catch (error) {
-    Util.Log.error('Erro ao consultar tarefas', error);
-    return false;
+    Util.Log.error(`${MODULO} | Erro ao consultar.`, error);
+
+    return {
+      sucesso: false,
+      dados: null,
+      erro: Util.Msg.erroInesperado,
+      total: 0,
+    };
   }
 };
 
-const buscarPorId = async (empresaId: number) => {
-  return await Knex(ETableNames.empresas).where('id', '=', empresaId).first();
-};
-
-const buscarPorRegistroOuDocumento = async (registro: string, cnpj_cpf: string): Promise<IEmpresa | undefined> => {
+const consultarPrimeiroRegistro = async (filtros: IFiltro<ITarefa>[]): Promise<IRetorno<ITarefa>> => {
   try {
-    const result = await Knex(ETableNames.empresas).where('registro', registro).orWhere('cnpj_cpf', cnpj_cpf).first();
+    const query = Knex.table(ETableNames.tarefas).select('*');
 
-    return result;
+    filtros.forEach((filtro) => {
+      query.where(filtro.coluna, filtro.operador, filtro.valor);
+    });
+
+    const result = await query.first();
+
+    if (result) {
+      return {
+        sucesso: true,
+        dados: result,
+        erro: null,
+        total: 1,
+      };
+    } else {
+      return {
+        sucesso: false,
+        dados: null,
+        erro: 'Nenhum registro foi encontrado.',
+        total: 0,
+      };
+    }
   } catch (error) {
-    Util.Log.error('Erro ao verificar empresa existente', error);
-    return undefined;
+    Util.Log.error(`${MODULO} | Erro ao consultar primeiro registro com filtros: filtros:${JSON.stringify(filtros)}`, error);
+
+    return {
+      sucesso: false,
+      dados: null,
+      erro: Util.Msg.erroInesperado,
+      total: 0,
+    };
   }
 };
 
-export const Tarefa = { consultar, buscarPorId, atualizarDados, buscarPorRegistroOuDocumento };
+const atualizarDados = async (empresaId: number, data: Partial<ITarefa>): Promise<IRetorno<string>> => {
+  try {
+    const result = await Knex(ETableNames.tarefas)
+      .where('id', '=', empresaId)
+      .update({ ...data });
+
+    if (result) {
+      return {
+        sucesso: true,
+        dados: Util.Msg.sucesso,
+        erro: null,
+        total: 1,
+      };
+    } else {
+      return {
+        sucesso: false,
+        dados: null,
+        erro: Util.Msg.erroInesperado,
+        total: 0,
+      };
+    }
+  } catch (error) {
+    Util.Log.error(`${MODULO} | Erro ao atualizar dados.`, error);
+
+    return {
+      sucesso: false,
+      dados: null,
+      erro: Util.Msg.erroInesperado,
+      total: 0,
+    };
+  }
+};
+
+export const Tarefa = { cadastrar, consultar, consultarPrimeiroRegistro, atualizarDados };
