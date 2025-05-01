@@ -41,7 +41,27 @@ export async function up(knex: Knex) {
       table.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
       table.timestamp('updated_at').defaultTo(knex.raw('CURRENT_TIMESTAMP  ON UPDATE CURRENT_TIMESTAMP'));
     })
-    .then(() => {
+    .then(async () => {
+      // Criando a trigger para impedir duplicidade condicional
+      await knex.raw(`
+        CREATE TRIGGER trg_bloquear_status_duplicado
+        BEFORE INSERT ON ${ETableNames.tarefa_empresa}
+        FOR EACH ROW
+        BEGIN
+          IF NEW.status IN ('PENDENTE', 'PROCESSANDO', 'CONSULTAR') THEN
+            IF EXISTS (
+              SELECT 1 FROM ${ETableNames.tarefa_empresa}
+              WHERE tarefa_id = NEW.tarefa_id
+                AND empresa_id = NEW.empresa_id
+                AND status IN ('PENDENTE', 'PROCESSANDO', 'CONSULTAR')
+            ) THEN
+              SIGNAL SQLSTATE '45000'
+              SET MESSAGE_TEXT = 'Já existe uma tarefa ativa para esta empresa';
+            END IF;
+          END IF;
+        END;
+      `);
+
       Util.Log.info(`# Criado tabela ${ETableNames.tarefa_empresa}`);
     });
 }
