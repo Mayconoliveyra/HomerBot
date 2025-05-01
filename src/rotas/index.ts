@@ -21,5 +21,6 @@ router.post('/configuracoes/softcomshop', Controladores.SoftcomShop.configuracao
 router.post('/configuracoes/meu-carrinho', Controladores.MeuCarrinho.configuracaoValidacao, Controladores.MeuCarrinho.configuracao);
 
 router.get('/tarefa', Controladores.Tarefa.consultarValidacao, Controladores.Tarefa.consultar);
+router.post('/tarefa/solicitar', Controladores.Tarefa.solicitarValidacao, Controladores.Tarefa.solicitar);
 
 export { router };
