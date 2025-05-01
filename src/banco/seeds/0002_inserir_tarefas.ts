@@ -20,7 +20,7 @@ export const seed = async (knex: Knex) => {
         simultaneamente: true,
         ativo: true,
         param_ss: true,
-        param_api_mkt: true,
+        param_mc: true,
       },
     ])
     .then(() => {

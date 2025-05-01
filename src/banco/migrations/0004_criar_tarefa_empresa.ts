@@ -39,7 +39,7 @@ export async function up(knex: Knex) {
       table.enum('status', ['PENDENTE', 'PROCESSANDO', 'FINALIZADO', 'CONSULTAR', 'CANCELADA', 'ERRO']).notNullable().defaultTo('PENDENTE'); // Status da tarefa
 
       table.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
-      table.timestamp('updated_at').defaultTo(knex.raw('NULL ON UPDATE CURRENT_TIMESTAMP'));
+      table.timestamp('updated_at').defaultTo(knex.raw('CURRENT_TIMESTAMP  ON UPDATE CURRENT_TIMESTAMP'));
     })
     .then(() => {
       Util.Log.info(`# Criado tabela ${ETableNames.tarefa_empresa}`);

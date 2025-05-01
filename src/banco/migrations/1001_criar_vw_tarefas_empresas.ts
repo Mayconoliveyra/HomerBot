@@ -24,6 +24,7 @@ export async function up(knex: Knex): Promise<void> {
       COALESCE(te.status, 'NOVO') AS te_status,
       te.feedback AS te_feedback,
       te.erro AS te_erro,
+      te.updated_at AS te_updated_at,
 
       -- Verificação dos tokens
       CASE WHEN e.ss_token_exp IS NOT NULL AND e.ss_token_exp > UNIX_TIMESTAMP() THEN TRUE ELSE FALSE END AS ss_autenticado,
