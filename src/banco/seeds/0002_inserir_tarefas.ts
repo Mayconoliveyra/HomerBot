@@ -14,11 +14,13 @@ export const seed = async (knex: Knex) => {
       {
         id: 1,
         nome: 'DataSyncFood - Meu Carrinho',
+        descricao_resumo: 'DataSyncFood - Meu Carrinho',
         descricao:
           'Exporte facilmente as mercadorias do Softcomshop para o Meu Carrinho. Serão transferidas as informações cadastradas: categorias, produto principal, combos e variações.',
         simultaneamente: true,
-        modal_nome: 'TarefaDataSyncFoodMeuCarrinho',
         ativo: true,
+        param_ss: true,
+        param_api_mkt: true,
       },
     ])
     .then(() => {

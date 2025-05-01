@@ -2,9 +2,9 @@ export interface ITarefa {
   id: number;
 
   nome: string;
+  descricao_resumo: string;
   descricao: string;
   simultaneamente: boolean;
-  modal_nome: string;
   ativo: boolean;
 
   param_descricao?: string | null;
@@ -23,6 +23,11 @@ export interface ITarefa {
   param_13?: string | null;
   param_14?: string | null;
   param_15?: string | null;
+
+  param_ss: boolean;
+  param_sh: boolean;
+  param_mc: boolean;
+  param_api_mkt: boolean;
 
   created_at: string;
   updated_at?: string;

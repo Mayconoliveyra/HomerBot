@@ -10,10 +10,10 @@ export async function up(knex: Knex) {
       table.bigIncrements('id');
 
       table.string('nome', 30).notNullable().index(); // Nome da tarefa
+      table.string('descricao_resumo', 100).notNullable(); // Descrição resumida.
       table.text('descricao').notNullable(); // Descrição detalhada
 
       table.boolean('simultaneamente').defaultTo(false); // Define se pode executar simultaneamente
-      table.string('modal_nome').notNullable();
       table.boolean('ativo').defaultTo(false); // Indicador se a automação está ativa
 
       /**
@@ -36,6 +36,12 @@ export async function up(knex: Knex) {
       table.string('param_13', 255).nullable();
       table.string('param_14', 255).nullable();
       table.string('param_15', 255).nullable();
+
+      // Parâmetros de configurações necessárias
+      table.boolean('param_ss').defaultTo(false);
+      table.boolean('param_sh').defaultTo(false);
+      table.boolean('param_mc').defaultTo(false);
+      table.boolean('param_api_mkt').defaultTo(false);
 
       table.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
       table.timestamp('updated_at').defaultTo(knex.raw('NULL ON UPDATE CURRENT_TIMESTAMP'));

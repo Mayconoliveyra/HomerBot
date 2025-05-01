@@ -21,6 +21,7 @@ export interface ITarefaHistorico {
   param_14?: string | null;
   param_15?: string | null;
 
+  feedback?: string | null;
   erro?: string | null;
 
   status: 'PENDENTE' | 'PROCESSANDO' | 'FINALIZADO' | 'CONSULTAR' | 'CANCELADA' | 'ERRO';

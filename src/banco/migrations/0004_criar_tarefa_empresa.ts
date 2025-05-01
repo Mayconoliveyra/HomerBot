@@ -33,6 +33,7 @@ export async function up(knex: Knex) {
       table.string('param_14', 255).nullable();
       table.string('param_15', 255).nullable();
 
+      table.text('feedback').nullable();
       table.text('erro').nullable();
 
       table.enum('status', ['PENDENTE', 'PROCESSANDO', 'FINALIZADO', 'CONSULTAR', 'CANCELADA', 'ERRO']).notNullable().defaultTo('PENDENTE'); // Status da tarefa
