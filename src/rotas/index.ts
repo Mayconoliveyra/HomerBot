@@ -22,5 +22,6 @@ router.post('/configuracoes/meu-carrinho', Controladores.MeuCarrinho.configuraca
 
 router.get('/tarefa', Controladores.Tarefa.consultarValidacao, Controladores.Tarefa.consultar);
 router.post('/tarefa/solicitar', Controladores.Tarefa.solicitarValidacao, Controladores.Tarefa.solicitar);
+router.patch('/tarefa/cancelar/:tarefaId', Controladores.Tarefa.cancelarValidacao, Controladores.Tarefa.cancelar);
 
 export { router };

@@ -53,13 +53,7 @@ const consultarValidacao = Middlewares.validacao((getSchema) => ({
     }),
   ),
 }));
-const consultarPorIdValidacao = Middlewares.validacao((getSchema) => ({
-  params: getSchema<{ empresaId: number }>(
-    yup.object().shape({
-      empresaId: yup.number().integer().required(),
-    }),
-  ),
-}));
+
 const solicitarValidacao = Middlewares.validacao((getSchema) => ({
   body: getSchema<IBodySolicitarProps>(
     yup.object().shape({
@@ -81,6 +75,13 @@ const solicitarValidacao = Middlewares.validacao((getSchema) => ({
       param_13: yup.string().nullable(),
       param_14: yup.string().nullable(),
       param_15: yup.string().nullable(),
+    }),
+  ),
+}));
+const cancelarValidacao = Middlewares.validacao((getSchema) => ({
+  params: getSchema<{ tarefaId: number }>(
+    yup.object().shape({
+      tarefaId: yup.number().integer().required(),
     }),
   ),
 }));
@@ -108,16 +109,6 @@ const consultar = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) =
     totalRegistros: result.total,
     totalPaginas: totalPaginas,
   });
-};
-const consultarPorId = async (req: Request<{ empresaId: string }>, res: Response) => {
-  const empresaId = req.params.empresaId as unknown as number;
-
-  const empresa = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'id', operador: '=', valor: empresaId }]);
-  if (!empresa.sucesso) {
-    return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: 'Empresa não encontrada.' } });
-  }
-
-  return res.status(StatusCodes.OK).json(empresa);
 };
 const solicitar = async (req: Request<{}, {}, IBodySolicitarProps>, res: Response) => {
   const {
@@ -154,6 +145,20 @@ const solicitar = async (req: Request<{}, {}, IBodySolicitarProps>, res: Respons
     });
   }
 
+  const tarefaEmProcessamento = await Repositorios.TarefaEmpresa.consultarPrimeiroRegistro([
+    { coluna: 'empresa_id', operador: '=', valor: empresa_id },
+    { coluna: 'tarefa_id', operador: '=', valor: tarefa_id },
+  ]);
+  if (tarefaEmProcessamento.sucesso) {
+    if (
+      tarefaEmProcessamento.dados.status === 'PENDENTE' ||
+      tarefaEmProcessamento.dados.status === 'PROCESSANDO' ||
+      tarefaEmProcessamento.dados.status === 'CONSULTAR'
+    ) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ errors: { default: `Já existe uma outra tarefa com status: ${tarefaEmProcessamento.dados.status}` } });
+    }
+  }
+
   const resultSolicitar = await Repositorios.TarefaEmpresa.solicitar({ empresa_id, tarefa_id, status: 'PENDENTE' });
 
   if (resultSolicitar.sucesso) {
@@ -164,12 +169,31 @@ const solicitar = async (req: Request<{}, {}, IBodySolicitarProps>, res: Respons
     });
   }
 };
+const cancelar = async (req: Request<{ tarefaId: string }>, res: Response) => {
+  const tarefaId = req.params.tarefaId as unknown as number;
+
+  const tarefa = await Repositorios.TarefaEmpresa.consultarPrimeiroRegistro([{ coluna: 'id', operador: '=', valor: tarefaId }]);
+  if (!tarefa.sucesso) {
+    return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: 'Tarefa não encontrada.' } });
+  }
+
+  if (tarefa.dados.status !== 'PENDENTE') {
+    return res.status(StatusCodes.BAD_REQUEST).json({ errors: { default: 'Apenas tarefas com status "PENDENTE" pode ser cancelada.' } });
+  }
+
+  const resultCancelar = await Repositorios.TarefaEmpresa.atualizarDados(tarefaId, { status: 'CANCELADA', feedback: 'Tarefa cancelada pelo usuário.' });
+  if (!resultCancelar.sucesso) {
+    return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: resultCancelar.erro } });
+  }
+
+  return res.status(StatusCodes.NO_CONTENT).send();
+};
 
 export const Tarefa = {
   consultarValidacao,
-  consultarPorIdValidacao,
   solicitarValidacao,
+  cancelarValidacao,
   consultar,
-  consultarPorId,
   solicitar,
+  cancelar,
 };
