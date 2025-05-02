@@ -16,9 +16,30 @@ export async function up(knex: Knex): Promise<void> {
       t.nome AS t_nome,
       t.descricao_resumo AS t_descricao_resumo,
       t.descricao AS t_descricao,
-      t.param_ss AS t_param_ss,
-      t.param_sh AS t_param_sh,
-      t.param_mc AS t_param_mc,
+      CASE 
+        WHEN t.param_ss = TRUE THEN 
+          CASE 
+            WHEN e.ss_token_exp IS NOT NULL AND e.ss_token_exp > UNIX_TIMESTAMP() THEN TRUE 
+            ELSE FALSE 
+          END
+        ELSE NULL
+      END AS t_param_ss,
+      CASE 
+        WHEN t.param_sh = TRUE THEN 
+          CASE 
+            WHEN e.sh_token_exp IS NOT NULL AND e.sh_token_exp > UNIX_TIMESTAMP() THEN TRUE 
+            ELSE FALSE 
+          END
+        ELSE NULL
+      END AS t_param_sh,
+      CASE 
+        WHEN t.param_mc = TRUE THEN 
+          CASE 
+            WHEN e.mc_token_exp IS NOT NULL AND e.mc_token_exp > UNIX_TIMESTAMP() THEN TRUE 
+            ELSE FALSE 
+          END
+        ELSE NULL
+      END AS t_param_mc,
       t.param_api_mkt AS t_param_api_mkt,
       te.id AS te_id,
       COALESCE(te.status, 'NOVO') AS te_status,
