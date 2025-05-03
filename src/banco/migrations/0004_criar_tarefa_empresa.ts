@@ -42,18 +42,39 @@ export async function up(knex: Knex) {
       table.timestamp('updated_at').defaultTo(knex.raw('CURRENT_TIMESTAMP  ON UPDATE CURRENT_TIMESTAMP'));
     })
     .then(async () => {
-      // Criando a trigger para impedir duplicidade condicional
+      // Criando a trigger para impedir duplicidade condicional no insert
       await knex.raw(`
-        CREATE TRIGGER trg_bloquear_status_duplicado
-        BEFORE INSERT ON ${ETableNames.tarefa_empresa}
+        CREATE TRIGGER trg_bloquear_status_duplicado_insert
+        BEFORE INSERT ON tarefa_empresa
         FOR EACH ROW
         BEGIN
           IF NEW.status IN ('PENDENTE', 'PROCESSANDO', 'CONSULTAR') THEN
             IF EXISTS (
-              SELECT 1 FROM ${ETableNames.tarefa_empresa}
+              SELECT 1 FROM tarefa_empresa
               WHERE tarefa_id = NEW.tarefa_id
                 AND empresa_id = NEW.empresa_id
                 AND status IN ('PENDENTE', 'PROCESSANDO', 'CONSULTAR')
+            ) THEN
+              SIGNAL SQLSTATE '45000'
+              SET MESSAGE_TEXT = 'Já existe uma tarefa ativa para esta empresa';
+            END IF;
+          END IF;
+        END;
+      `);
+
+      // Criando a trigger para impedir duplicidade condicional no update
+      await knex.raw(`
+        CREATE TRIGGER trg_bloquear_status_duplicado_update
+        BEFORE UPDATE ON tarefa_empresa
+        FOR EACH ROW
+        BEGIN
+          IF NEW.status IN ('PENDENTE', 'PROCESSANDO', 'CONSULTAR') THEN
+            IF EXISTS (
+              SELECT 1 FROM tarefa_empresa
+              WHERE tarefa_id = NEW.tarefa_id
+                AND empresa_id = NEW.empresa_id
+                AND status IN ('PENDENTE', 'PROCESSANDO', 'CONSULTAR')
+                AND id != NEW.id  -- evita bloquear atualização no próprio registro
             ) THEN
               SIGNAL SQLSTATE '45000'
               SET MESSAGE_TEXT = 'Já existe uma tarefa ativa para esta empresa';
