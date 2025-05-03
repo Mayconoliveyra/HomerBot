@@ -19,7 +19,7 @@ export async function up(knex: Knex): Promise<void> {
       CASE 
         WHEN t.param_ss = TRUE THEN 
           CASE 
-            WHEN e.ss_token_exp IS NOT NULL AND e.ss_token_exp > UNIX_TIMESTAMP() THEN TRUE 
+            WHEN e.ss_token IS NOT NULL THEN TRUE 
             ELSE FALSE 
           END
         ELSE NULL
@@ -27,7 +27,7 @@ export async function up(knex: Knex): Promise<void> {
       CASE 
         WHEN t.param_sh = TRUE THEN 
           CASE 
-            WHEN e.sh_token_exp IS NOT NULL AND e.sh_token_exp > UNIX_TIMESTAMP() THEN TRUE 
+            WHEN e.sh_token IS NOT NULL THEN TRUE 
             ELSE FALSE 
           END
         ELSE NULL
@@ -35,7 +35,7 @@ export async function up(knex: Knex): Promise<void> {
       CASE 
         WHEN t.param_mc = TRUE THEN 
           CASE 
-            WHEN e.mc_token_exp IS NOT NULL AND e.mc_token_exp > UNIX_TIMESTAMP() THEN TRUE 
+            WHEN e.mc_token IS NOT NULL THEN TRUE 
             ELSE FALSE 
           END
         ELSE NULL
