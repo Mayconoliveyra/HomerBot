@@ -5,7 +5,7 @@ import { IEmpresa } from '../banco/models/empresa';
 import { IBodyCadastrarProps } from '../controladores/empresa';
 
 import { Util } from '../util';
-import { IFiltro, IRetorno } from '../util/padroes';
+import { IFiltro, IRetorno } from '../util/tipagens';
 
 const MODULO = '[Empresa]';
 

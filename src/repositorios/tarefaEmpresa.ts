@@ -3,7 +3,7 @@ import { Knex } from '../banco/knex';
 import { ITarefaHistorico } from '../banco/models/tarefaEmpresa';
 
 import { Util } from '../util';
-import { IFiltro, IRetorno } from '../util/padroes';
+import { IFiltro, IRetorno } from '../util/tipagens';
 
 const MODULO = '[TarefaEmpresa]';
 
