@@ -44,7 +44,6 @@ export async function up(knex: Knex): Promise<void> {
       te.id AS te_id,
       COALESCE(te.status, 'NOVO') AS te_status,
       te.feedback AS te_feedback,
-      te.erro AS te_erro,
       te.updated_at AS te_updated_at,
 
       -- Verificação dos tokens

@@ -76,13 +76,13 @@ const consultarPrimeiroRegistro = async (filtros: IFiltro<ITarefaHistorico>[]): 
 };
 
 const atualizarDados = async (id: number, dados: Partial<ITarefaHistorico>): Promise<IRetorno<string>> => {
-  delete dados.id;
-  delete dados.tarefa_id;
-  delete dados.empresa_id;
-  delete dados.created_at;
-  delete dados.updated_at;
-
   try {
+    delete dados.id;
+    delete dados.tarefa_id;
+    delete dados.empresa_id;
+    delete dados.created_at;
+    delete dados.updated_at;
+
     const result = await Knex(ETableNames.tarefa_empresa)
       .where('id', '=', id)
       .update({ ...dados });

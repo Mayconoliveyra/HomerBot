@@ -22,7 +22,6 @@ export interface IVwTarefaProcessar {
   te_param_15?: string | null;
 
   te_feedback?: string | null;
-  te_erro?: string | null;
 
   te_status: 'PENDENTE' | 'PROCESSANDO' | 'FINALIZADO' | 'CONSULTAR' | 'CANCELADA' | 'ERRO';
 

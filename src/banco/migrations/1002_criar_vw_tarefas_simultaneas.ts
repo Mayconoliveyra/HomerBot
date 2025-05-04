@@ -29,7 +29,6 @@ export async function up(knex: Knex): Promise<void> {
       te.param_14 AS te_param_14,
       te.param_15 AS te_param_15,
       te.feedback AS te_feedback,
-      te.erro AS te_erro,
       te.status AS te_status,
       te.created_at AS te_created_at,
       te.updated_at AS te_updated_at,

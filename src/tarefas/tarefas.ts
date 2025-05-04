@@ -2,6 +2,7 @@ import schedule from 'node-schedule';
 
 import { ETableNames } from '../banco/eTableNames';
 import { Knex } from '../banco/knex';
+import { IVwTarefaProcessar } from '../banco/models/vwTarefaProcessar';
 
 import { Repositorios } from '../repositorios';
 
@@ -13,6 +14,42 @@ const MODULO = '[Tarefas]';
 
 let emExecucaoTarefas = false;
 
+const executarTarefa = async (tarefa: IVwTarefaProcessar) => {
+  Util.Log.info(`${MODULO} | executarTarefa | tId: ${tarefa.t_id} | teId: ${tarefa.te_id}`);
+
+  try {
+    if (tarefa.t_id === 1) {
+      const result = await Servicos.MeuCarrinho.exportarMercadoriasParaMeuCarrinho(tarefa.e_id, tarefa.e_mc_empresa_id || '');
+
+      if (!result.sucesso) {
+        await Repositorios.TarefaEmpresa.atualizarDados(tarefa.te_id, {
+          status: 'ERRO',
+          feedback: result.erro,
+        });
+      } else {
+        await Repositorios.TarefaEmpresa.atualizarDados(tarefa.te_id, {
+          status: 'FINALIZADO',
+          feedback: 'Processo realizado com sucesso.',
+        });
+      }
+    } else {
+      Util.Log.error(`${MODULO} | executarTarefa | Nenhuma execução definida para a tarefa: ${tarefa.t_nome}`);
+
+      await Repositorios.TarefaEmpresa.atualizarDados(tarefa.te_id, {
+        status: 'ERRO',
+        feedback: 'Nenhuma execução definida para a tarefa.',
+      });
+    }
+  } catch (error) {
+    Util.Log.error(`${MODULO} | executarTarefa | Erro ao executar a tarefa: ${tarefa.t_nome}`, error);
+
+    await Repositorios.TarefaEmpresa.atualizarDados(tarefa.te_id, {
+      status: 'ERRO',
+      feedback: 'Erro desconhecido ao executar a tarefa.',
+    });
+  }
+};
+
 const processarTarefas = () => {
   // Executa a cada 5 segundos
   schedule.scheduleJob('*/5 * * * * *', async () => {
@@ -23,32 +60,15 @@ const processarTarefas = () => {
 
     emExecucaoTarefas = true;
     try {
-      // Buscar todas as empresas que precisam de renovação
-      const empresas = await Knex(ETableNames.vw_tarefas_simultaneas).where('prox_processar', '=', true).orderBy('te_id', 'ASC').first();
-      console.log(MODULO, Util.DataHora.obterDataAtual('DD/MM/YYYY HH:mm:ss'));
+      const tarefa = await Knex(ETableNames.vw_tarefas_simultaneas).where('prox_processar', '=', true).orderBy('te_id', 'ASC').first();
 
-      if (empresas) {
-        await Repositorios.TarefaEmpresa.atualizarDados(empresas.te_id, {
+      if (tarefa) {
+        await Repositorios.TarefaEmpresa.atualizarDados(tarefa.te_id, {
           status: 'PROCESSANDO',
-          /*  feedback: 'Processo realizado com sucesso.', */
+          feedback: null,
         });
 
-        // const mc = await Servicos.MeuCarrinho.zerarCadastros(empresa_id, empresa.mc_empresa_id || '');
-        const mc = await Servicos.MeuCarrinho.exportarMercadoriasParaMeuCarrinho(empresas.e_id, empresas.e_mc_empresa_id || '');
-
-        console.log('mc', mc);
-
-        if (!mc.sucesso) {
-          await Repositorios.TarefaEmpresa.atualizarDados(empresas.te_id, {
-            status: 'ERRO',
-            erro: mc.erro,
-          });
-        } else {
-          await Repositorios.TarefaEmpresa.atualizarDados(empresas.te_id, {
-            status: 'FINALIZADO',
-            feedback: 'Processo realizado com sucesso.',
-          });
-        }
+        executarTarefa(tarefa);
 
         emExecucaoTarefas = false;
       } else {

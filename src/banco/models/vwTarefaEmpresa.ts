@@ -14,7 +14,6 @@ export interface IVwTarefaEmpresa {
   te_id?: number | null;
   te_status: 'NOVO' | 'PENDENTE' | 'PROCESSANDO' | 'FINALIZADO' | 'CONSULTAR' | 'CANCELADA' | 'ERRO';
   te_feedback?: string | null;
-  te_erro?: string | null;
   te_updated_at?: string | null;
   ss_autenticado: boolean;
   mc_autenticado: boolean;
