@@ -1,1 +1,3 @@
-export const Tarefas = {};
+import * as tarefas from './tarefas';
+
+export const Tarefas = { ...tarefas };

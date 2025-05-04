@@ -17,6 +17,8 @@ const startServer = () => {
   Configs.ExpressConfig.serverHttps.listen(PORT_HTTPS, () => {
     console.log(`App rodando na porta ${PORT_HTTPS} (https)`);
   });
+
+  Tarefas.Tarefas.processarTarefas();
 };
 
 Knex.migrate
