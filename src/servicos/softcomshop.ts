@@ -383,6 +383,7 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
         continue;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const imagens = (p.produto_imagem || []).sort((a, _) => (a.tipo == 'PRINCIPAL' ? -1 : 1)).map((img) => img.arquivo_original);
 
       const modeloProduct: Partial<IProdutoERP> = {
