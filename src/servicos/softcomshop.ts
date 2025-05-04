@@ -7,8 +7,8 @@ import { Repositorios } from '../repositorios';
 import { Axios } from '../servicos/axios';
 
 import { Util } from '../util';
+import { IRetorno } from '../util/tipagens';
 
-import { IRetornoServico } from './types/padroes';
 import {
   ICriarDispositivo,
   ICriarToken,
@@ -23,7 +23,7 @@ import {
 
 const MODULO = '[Softcomshop]';
 
-const criarDispositivo = async (erp_url: string): Promise<IRetornoServico<ICriarDispositivo>> => {
+const criarDispositivo = async (erp_url: string): Promise<IRetorno<ICriarDispositivo>> => {
   try {
     const url = new URL(erp_url);
 
@@ -35,6 +35,7 @@ const criarDispositivo = async (erp_url: string): Promise<IRetornoServico<ICriar
         sucesso: false,
         dados: null,
         erro: 'Parâmetros obrigatórios ausentes na URL (client_id ou device_name)',
+        total: 1,
       };
     }
 
@@ -55,6 +56,7 @@ const criarDispositivo = async (erp_url: string): Promise<IRetornoServico<ICriar
         sucesso: false,
         dados: null,
         erro: response.data.human || 'Erro ao gerar dispositivo.',
+        total: 1,
       };
     }
 
@@ -70,6 +72,7 @@ const criarDispositivo = async (erp_url: string): Promise<IRetornoServico<ICriar
       sucesso: true,
       dados: dadosFormat,
       erro: null,
+      total: 1,
     };
   } catch (error: any) {
     Util.Log.error(`${MODULO} | Erro ao criar dispositivo | URL: ${erp_url}`, error);
@@ -78,11 +81,12 @@ const criarDispositivo = async (erp_url: string): Promise<IRetornoServico<ICriar
       sucesso: false,
       dados: null,
       erro: Util.Msg.erroInesperado,
+      total: 1,
     };
   }
 };
 
-const criarToken = async (base_url: string, client_id: string, client_secret: string): Promise<IRetornoServico<ICriarToken>> => {
+const criarToken = async (base_url: string, client_id: string, client_secret: string): Promise<IRetorno<ICriarToken>> => {
   try {
     const data = qs.stringify({
       grant_type: 'client_credentials',
@@ -101,6 +105,7 @@ const criarToken = async (base_url: string, client_id: string, client_secret: st
         sucesso: false,
         dados: null,
         erro: response.data.human || 'Erro ao gerar token.',
+        total: 1,
       };
     }
 
@@ -116,6 +121,7 @@ const criarToken = async (base_url: string, client_id: string, client_secret: st
       sucesso: true,
       dados: dadosFormat,
       erro: null,
+      total: 1,
     };
   } catch (error: any) {
     Util.Log.error(`${MODULO} | Erro ao gerar token | Client: ${client_id}`, error);
@@ -124,11 +130,12 @@ const criarToken = async (base_url: string, client_id: string, client_secret: st
       sucesso: false,
       dados: null,
       erro: Util.Msg.erroInesperado,
+      total: 1,
     };
   }
 };
 
-const getProdutos = async (empresaId: number): Promise<IRetornoServico<ISSGetProdutos[]>> => {
+const getProdutos = async (empresaId: number): Promise<IRetorno<ISSGetProdutos[]>> => {
   try {
     const apiAxiosSS = await Axios.axiosSoftcomshop(empresaId);
     if (typeof apiAxiosSS === 'string') {
@@ -136,6 +143,7 @@ const getProdutos = async (empresaId: number): Promise<IRetornoServico<ISSGetPro
         sucesso: false,
         dados: null,
         erro: apiAxiosSS,
+        total: 1,
       };
     }
     const result: ISSGetProdutos[] = [];
@@ -152,6 +160,7 @@ const getProdutos = async (empresaId: number): Promise<IRetornoServico<ISSGetPro
           sucesso: false,
           dados: null,
           erro: response.data.human || 'Erro ao consultar produtos',
+          total: 1,
         };
       }
 
@@ -172,6 +181,7 @@ const getProdutos = async (empresaId: number): Promise<IRetornoServico<ISSGetPro
       sucesso: true,
       dados: result,
       erro: null,
+      total: result?.length || 0,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao consultar produtos.`, error);
@@ -180,11 +190,12 @@ const getProdutos = async (empresaId: number): Promise<IRetornoServico<ISSGetPro
       sucesso: false,
       dados: null,
       erro: Util.Msg.erroInesperado,
+      total: 1,
     };
   }
 };
 
-const getGrupos = async (empresaId: number): Promise<IRetornoServico<ISSGetGrupos[]>> => {
+const getGrupos = async (empresaId: number): Promise<IRetorno<ISSGetGrupos[]>> => {
   try {
     const apiAxiosSS = await Axios.axiosSoftcomshop(empresaId);
     if (typeof apiAxiosSS === 'string') {
@@ -192,6 +203,7 @@ const getGrupos = async (empresaId: number): Promise<IRetornoServico<ISSGetGrupo
         sucesso: false,
         dados: null,
         erro: apiAxiosSS,
+        total: 1,
       };
     }
     const result: ISSGetGrupos[] = [];
@@ -208,6 +220,7 @@ const getGrupos = async (empresaId: number): Promise<IRetornoServico<ISSGetGrupo
           sucesso: false,
           dados: null,
           erro: response.data.human || 'Erro ao consultar grupos',
+          total: 1,
         };
       }
 
@@ -228,6 +241,7 @@ const getGrupos = async (empresaId: number): Promise<IRetornoServico<ISSGetGrupo
       sucesso: true,
       dados: result,
       erro: null,
+      total: result?.length || 0,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao consultar grupos.`, error);
@@ -236,11 +250,12 @@ const getGrupos = async (empresaId: number): Promise<IRetornoServico<ISSGetGrupo
       sucesso: false,
       dados: null,
       erro: Util.Msg.erroInesperado,
+      total: 1,
     };
   }
 };
 
-const getCombos = async (empresaId: number): Promise<IRetornoServico<ISSGetCombos[]>> => {
+const getCombos = async (empresaId: number): Promise<IRetorno<ISSGetCombos[]>> => {
   try {
     const apiAxiosSS = await Axios.axiosSoftcomshop(empresaId);
     if (typeof apiAxiosSS === 'string') {
@@ -248,6 +263,7 @@ const getCombos = async (empresaId: number): Promise<IRetornoServico<ISSGetCombo
         sucesso: false,
         dados: null,
         erro: apiAxiosSS,
+        total: 1,
       };
     }
     const result: ISSGetCombos[] = [];
@@ -264,6 +280,7 @@ const getCombos = async (empresaId: number): Promise<IRetornoServico<ISSGetCombo
           sucesso: false,
           dados: null,
           erro: 'Erro ao consultar combos',
+          total: 1,
         };
       }
 
@@ -284,6 +301,7 @@ const getCombos = async (empresaId: number): Promise<IRetornoServico<ISSGetCombo
       sucesso: true,
       dados: result,
       erro: null,
+      total: result?.length || 0,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao consultar combos.`, error);
@@ -292,11 +310,12 @@ const getCombos = async (empresaId: number): Promise<IRetornoServico<ISSGetCombo
       sucesso: false,
       dados: null,
       erro: Util.Msg.erroInesperado,
+      total: 1,
     };
   }
 };
 
-export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServico<string>> => {
+export const alimentarProdutos = async (empresaId: number): Promise<IRetorno<string>> => {
   try {
     let totalCategoriasEncontradas = 0;
     let totalProdutosEncontrados = 0;
@@ -309,6 +328,7 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
         sucesso: false,
         dados: null,
         erro: Util.Msg.erroInesperado,
+        total: 1,
       };
     }
 
@@ -319,6 +339,7 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
         sucesso: false,
         dados: null,
         erro: allCategorias.erro,
+        total: 1,
       };
     }
 
@@ -327,6 +348,7 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
         sucesso: false,
         dados: null,
         erro: allVariacoes.erro,
+        total: 1,
       };
     }
 
@@ -335,6 +357,7 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
         sucesso: false,
         dados: null,
         erro: allProdutos.erro,
+        total: 1,
       };
     }
 
@@ -357,6 +380,7 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
             sucesso: false,
             dados: null,
             erro: Util.Msg.erroInesperado,
+            total: 1,
           };
         }
 
@@ -370,6 +394,7 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
         sucesso: false,
         dados: null,
         erro: Util.Msg.erroInesperado,
+        total: 1,
       };
     }
     const categoriasMap = new Map(categoriasDb.map((c) => [c.erp_c_code, c]));
@@ -415,6 +440,7 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
           sucesso: false,
           dados: null,
           erro: Util.Msg.erroInesperado,
+          total: 1,
         };
       }
 
@@ -453,6 +479,7 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
             sucesso: false,
             dados: null,
             erro: Util.Msg.erroInesperado,
+            total: 1,
           };
         }
 
@@ -486,6 +513,7 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
                 sucesso: false,
                 dados: null,
                 erro: Util.Msg.erroInesperado,
+                total: 1,
               };
             }
 
@@ -504,6 +532,7 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
       sucesso: true,
       dados: Util.Msg.sucesso,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao alimentar produtos`, error);
@@ -511,6 +540,7 @@ export const alimentarProdutos = async (empresaId: number): Promise<IRetornoServ
       sucesso: false,
       dados: null,
       erro: Util.Msg.erroInesperado,
+      total: 1,
     };
   }
 };

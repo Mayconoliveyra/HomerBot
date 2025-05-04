@@ -23,9 +23,9 @@ import {
   IMCCriarVariacaoItemResponse,
   IMCGetProdutoVariacaoResponse,
 } from '../servicos/types/meuCarrinho';
-import { IRetornoServico } from '../servicos/types/padroes';
 
 import { Util } from '../util';
+import { IRetorno } from '../util/tipagens';
 
 import { Servicos } from '.';
 
@@ -54,7 +54,7 @@ const formatarErroValidacao = (erro: any): string => {
   }
 };
 
-const autenticar = async (usuario: string, senha: string): Promise<IRetornoServico<IAutenticar>> => {
+const autenticar = async (usuario: string, senha: string): Promise<IRetorno<IAutenticar>> => {
   try {
     const response = await Axios.defaultAxios.post<IMCAutenticar>(`${BASE_URL_MC}/auth/token`, {
       username: usuario,
@@ -69,6 +69,7 @@ const autenticar = async (usuario: string, senha: string): Promise<IRetornoServi
       sucesso: true,
       dados: { token: response.data.token, expiresAt: newExpToken },
       erro: null,
+      total: 1,
     };
   } catch (error: any) {
     Util.Log.error(`${MODULO} | Erro ao autenticar usuário`, error);
@@ -78,11 +79,12 @@ const autenticar = async (usuario: string, senha: string): Promise<IRetornoServi
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const getUsuario = async (token: string): Promise<IRetornoServico<IGetUsuario>> => {
+const getUsuario = async (token: string): Promise<IRetorno<IGetUsuario>> => {
   try {
     const response = await Axios.defaultAxios.get<IMCGetUsuario>(`${BASE_URL_MC}/auth/user`, {
       headers: {
@@ -94,6 +96,7 @@ const getUsuario = async (token: string): Promise<IRetornoServico<IGetUsuario>> 
       sucesso: true,
       dados: { merchantId: response.data.id },
       erro: null,
+      total: 1,
     };
   } catch (error: any) {
     Util.Log.error(`${MODULO} | Erro ao consultar dados do usuário`, error);
@@ -103,11 +106,12 @@ const getUsuario = async (token: string): Promise<IRetornoServico<IGetUsuario>> 
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const getEmpresa = async (token: string, merchantId: string): Promise<IRetornoServico<IGetEmpresa>> => {
+const getEmpresa = async (token: string, merchantId: string): Promise<IRetorno<IGetEmpresa>> => {
   try {
     const response = await Axios.defaultAxios.get<IMCGetEmpresa>(`${BASE_URL_MC}/merchants/${merchantId}`, {
       headers: {
@@ -119,6 +123,7 @@ const getEmpresa = async (token: string, merchantId: string): Promise<IRetornoSe
       sucesso: true,
       dados: { nome: response.data.name || '', cnpj: response.data.cnpj || '' },
       erro: null,
+      total: 1,
     };
   } catch (error: any) {
     Util.Log.error(`${MODULO} | Erro ao consultar dados da empresa`, error);
@@ -128,11 +133,12 @@ const getEmpresa = async (token: string, merchantId: string): Promise<IRetornoSe
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const getCategorias = async (empresaId: number, merchantId: string): Promise<IRetornoServico<IMCGetCategorias[]>> => {
+const getCategorias = async (empresaId: number, merchantId: string): Promise<IRetorno<IMCGetCategorias[]>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -140,6 +146,7 @@ const getCategorias = async (empresaId: number, merchantId: string): Promise<IRe
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -149,6 +156,7 @@ const getCategorias = async (empresaId: number, merchantId: string): Promise<IRe
       sucesso: true,
       dados: response.data,
       erro: null,
+      total: response.data?.length || 0,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao consultar categorias.`, error);
@@ -158,11 +166,12 @@ const getCategorias = async (empresaId: number, merchantId: string): Promise<IRe
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const getProdutos = async (empresaId: number): Promise<IRetornoServico<IMCGetProdutos[]>> => {
+const getProdutos = async (empresaId: number): Promise<IRetorno<IMCGetProdutos[]>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -170,6 +179,7 @@ const getProdutos = async (empresaId: number): Promise<IRetornoServico<IMCGetPro
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
     const result: IMCGetProdutos[] = [];
@@ -194,6 +204,7 @@ const getProdutos = async (empresaId: number): Promise<IRetornoServico<IMCGetPro
       sucesso: true,
       dados: result,
       erro: null,
+      total: result?.length || 0,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao consultar produtos.`, error);
@@ -203,11 +214,12 @@ const getProdutos = async (empresaId: number): Promise<IRetornoServico<IMCGetPro
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const getProdutoVariacao = async (empresaId: number, produtoId: string): Promise<IRetornoServico<IMCGetProdutoVariacaoResponse[] | []>> => {
+const getProdutoVariacao = async (empresaId: number, produtoId: string): Promise<IRetorno<IMCGetProdutoVariacaoResponse[] | []>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -215,6 +227,7 @@ const getProdutoVariacao = async (empresaId: number, produtoId: string): Promise
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -224,6 +237,7 @@ const getProdutoVariacao = async (empresaId: number, produtoId: string): Promise
       sucesso: true,
       dados: response.data.variations,
       erro: null,
+      total: response.data?.variations?.length || 0,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao consultar produto por id.`, error);
@@ -233,11 +247,12 @@ const getProdutoVariacao = async (empresaId: number, produtoId: string): Promise
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const addImgPorUrl = async (empresaId: number, produtoId: string, url: string): Promise<IRetornoServico<IMCAddImgPorUrl>> => {
+const addImgPorUrl = async (empresaId: number, produtoId: string, url: string): Promise<IRetorno<IMCAddImgPorUrl>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -245,6 +260,7 @@ const addImgPorUrl = async (empresaId: number, produtoId: string, url: string): 
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -259,6 +275,7 @@ const addImgPorUrl = async (empresaId: number, produtoId: string, url: string): 
       sucesso: true,
       dados: response.data,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao adicionar imagem pela url.`, error);
@@ -268,11 +285,12 @@ const addImgPorUrl = async (empresaId: number, produtoId: string, url: string): 
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const deleteCategoriaPorId = async (empresaId: number, categoriaId: string): Promise<IRetornoServico<{ id: string }>> => {
+const deleteCategoriaPorId = async (empresaId: number, categoriaId: string): Promise<IRetorno<{ id: string }>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -280,6 +298,7 @@ const deleteCategoriaPorId = async (empresaId: number, categoriaId: string): Pro
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -296,6 +315,7 @@ const deleteCategoriaPorId = async (empresaId: number, categoriaId: string): Pro
       sucesso: true,
       dados: { id: categoriaId },
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao remover categoria.`, error);
@@ -305,6 +325,7 @@ const deleteCategoriaPorId = async (empresaId: number, categoriaId: string): Pro
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
@@ -313,7 +334,7 @@ const atDisponibilidadeCategoria = async (
   empresaId: number,
   categoriaId: string,
   novaDisponibilidade: 'AVAILABLE' | 'UNAVAILABLE',
-): Promise<IRetornoServico<string>> => {
+): Promise<IRetorno<string>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -321,6 +342,7 @@ const atDisponibilidadeCategoria = async (
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -328,8 +350,9 @@ const atDisponibilidadeCategoria = async (
 
     return {
       sucesso: true,
-      dados: 'Sucesso!',
+      dados: Util.Msg.sucesso,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao atualizar a disponibilidade da categoria.`, error);
@@ -339,15 +362,12 @@ const atDisponibilidadeCategoria = async (
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const atDisponibilidadeProduto = async (
-  empresaId: number,
-  produtoId: string,
-  novaDisponibilidade: 'AVAILABLE' | 'UNAVAILABLE',
-): Promise<IRetornoServico<string>> => {
+const atDisponibilidadeProduto = async (empresaId: number, produtoId: string, novaDisponibilidade: 'AVAILABLE' | 'UNAVAILABLE'): Promise<IRetorno<string>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -355,6 +375,7 @@ const atDisponibilidadeProduto = async (
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -362,8 +383,9 @@ const atDisponibilidadeProduto = async (
 
     return {
       sucesso: true,
-      dados: 'Sucesso!',
+      dados: Util.Msg.sucesso,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao atualizar a disponibilidade do produto.`, error);
@@ -373,6 +395,7 @@ const atDisponibilidadeProduto = async (
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
@@ -382,7 +405,7 @@ const atDisponibilidadeVariacaoItem = async (
   variacaoId: string,
   variacaoItemId: string,
   novaDisponibilidade: 'AVAILABLE' | 'UNAVAILABLE',
-): Promise<IRetornoServico<string>> => {
+): Promise<IRetorno<string>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -390,6 +413,7 @@ const atDisponibilidadeVariacaoItem = async (
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -397,8 +421,9 @@ const atDisponibilidadeVariacaoItem = async (
 
     return {
       sucesso: true,
-      dados: 'Sucesso!',
+      dados: Util.Msg.sucesso,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao atualizar a disponibilidade da variação item.`, error);
@@ -408,11 +433,12 @@ const atDisponibilidadeVariacaoItem = async (
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const criarCategoria = async (empresaId: number, novaCategoria: IMCCriarCategoria): Promise<IRetornoServico<IMCGetCategorias>> => {
+const criarCategoria = async (empresaId: number, novaCategoria: IMCCriarCategoria): Promise<IRetorno<IMCGetCategorias>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -420,6 +446,7 @@ const criarCategoria = async (empresaId: number, novaCategoria: IMCCriarCategori
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -429,6 +456,7 @@ const criarCategoria = async (empresaId: number, novaCategoria: IMCCriarCategori
       sucesso: true,
       dados: response.data,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao cadastrar categoria.`, error);
@@ -438,11 +466,12 @@ const criarCategoria = async (empresaId: number, novaCategoria: IMCCriarCategori
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const criarProduto = async (empresaId: number, novoProduto: IMCCriarProduto): Promise<IRetornoServico<IMCGetProdutos>> => {
+const criarProduto = async (empresaId: number, novoProduto: IMCCriarProduto): Promise<IRetorno<IMCGetProdutos>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -450,6 +479,7 @@ const criarProduto = async (empresaId: number, novoProduto: IMCCriarProduto): Pr
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -459,6 +489,7 @@ const criarProduto = async (empresaId: number, novoProduto: IMCCriarProduto): Pr
       sucesso: true,
       dados: response.data,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao cadastrar produto.`, error);
@@ -468,6 +499,7 @@ const criarProduto = async (empresaId: number, novoProduto: IMCCriarProduto): Pr
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
@@ -476,7 +508,7 @@ const criarVariacaoCabecalho = async (
   empresaId: number,
   produtoId: string,
   novaVariacaoCabecalho: IMCCriarVariacaoCabecalho,
-): Promise<IRetornoServico<IMCCriarVariacaoCabecalhoResponse>> => {
+): Promise<IRetorno<IMCCriarVariacaoCabecalhoResponse>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -484,6 +516,7 @@ const criarVariacaoCabecalho = async (
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -493,6 +526,7 @@ const criarVariacaoCabecalho = async (
       sucesso: true,
       dados: response.data,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao cadastrar o cabeçalho da variação.`, error);
@@ -502,6 +536,7 @@ const criarVariacaoCabecalho = async (
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
@@ -510,7 +545,7 @@ const criarVariacaoItem = async (
   empresaId: number,
   variacaoId: string,
   novaVariacaoItem: IMCCriarVariacaoItem,
-): Promise<IRetornoServico<IMCCriarVariacaoItemResponse>> => {
+): Promise<IRetorno<IMCCriarVariacaoItemResponse>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -518,6 +553,7 @@ const criarVariacaoItem = async (
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -527,6 +563,7 @@ const criarVariacaoItem = async (
       sucesso: true,
       dados: response.data,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao cadastrar o item da variação.`, error);
@@ -536,11 +573,12 @@ const criarVariacaoItem = async (
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const deleteProdutoPorId = async (empresaId: number, produtoId: string): Promise<IRetornoServico<{ id: string }>> => {
+const deleteProdutoPorId = async (empresaId: number, produtoId: string): Promise<IRetorno<{ id: string }>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -548,6 +586,7 @@ const deleteProdutoPorId = async (empresaId: number, produtoId: string): Promise
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -564,6 +603,7 @@ const deleteProdutoPorId = async (empresaId: number, produtoId: string): Promise
       sucesso: true,
       dados: { id: produtoId },
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao remover produto por id.`, error);
@@ -573,11 +613,12 @@ const deleteProdutoPorId = async (empresaId: number, produtoId: string): Promise
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const atOrdenarVariacaoCabecalho = async (empresaId: number, produtoId: string, variacaoId: string, priority: number): Promise<IRetornoServico<string>> => {
+const atOrdenarVariacaoCabecalho = async (empresaId: number, produtoId: string, variacaoId: string, priority: number): Promise<IRetorno<string>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -585,6 +626,7 @@ const atOrdenarVariacaoCabecalho = async (empresaId: number, produtoId: string, 
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -594,8 +636,9 @@ const atOrdenarVariacaoCabecalho = async (empresaId: number, produtoId: string, 
 
     return {
       sucesso: true,
-      dados: 'Sucesso!',
+      dados: Util.Msg.sucesso,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao atualizar ordenação do cabeçalho da variação.`, error);
@@ -605,11 +648,12 @@ const atOrdenarVariacaoCabecalho = async (empresaId: number, produtoId: string, 
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const atControleEstoque = async (empresaId: number, produtoId: string, active: boolean): Promise<IRetornoServico<string>> => {
+const atControleEstoque = async (empresaId: number, produtoId: string, active: boolean): Promise<IRetorno<string>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -617,6 +661,7 @@ const atControleEstoque = async (empresaId: number, produtoId: string, active: b
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -624,8 +669,9 @@ const atControleEstoque = async (empresaId: number, produtoId: string, active: b
 
     return {
       sucesso: true,
-      dados: 'Sucesso!',
+      dados: Util.Msg.sucesso,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao atualizar controle de estoque.`, error);
@@ -635,14 +681,12 @@ const atControleEstoque = async (empresaId: number, produtoId: string, active: b
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const atDisponibilidade = async (
-  empresaId: number,
-  produtos: { id: string; availability: 'AVAILABLE' | 'UNAVAILABLE' }[],
-): Promise<IRetornoServico<string>> => {
+const atDisponibilidade = async (empresaId: number, produtos: { id: string; availability: 'AVAILABLE' | 'UNAVAILABLE' }[]): Promise<IRetorno<string>> => {
   function dividirEmLotes<T>(array: T[], size: number): T[][] {
     const resultado = [];
     for (let i = 0; i < array.length; i += size) {
@@ -658,6 +702,7 @@ const atDisponibilidade = async (
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -678,8 +723,9 @@ const atDisponibilidade = async (
 
     return {
       sucesso: true,
-      dados: 'Sucesso!',
+      dados: Util.Msg.sucesso,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao atualizar disponibilidade em lote.`, error);
@@ -689,6 +735,7 @@ const atDisponibilidade = async (
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
@@ -696,7 +743,7 @@ const atDisponibilidade = async (
 const atDisponibilidadeVariacao = async (
   empresaId: number,
   variacoes: { variationId: string; id: string; availability: 'AVAILABLE' | 'UNAVAILABLE' }[],
-): Promise<IRetornoServico<string>> => {
+): Promise<IRetorno<string>> => {
   function dividirEmLotes<T>(array: T[], size: number): T[][] {
     const resultado = [];
     for (let i = 0; i < array.length; i += size) {
@@ -712,6 +759,7 @@ const atDisponibilidadeVariacao = async (
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -732,8 +780,9 @@ const atDisponibilidadeVariacao = async (
 
     return {
       sucesso: true,
-      dados: 'Sucesso!',
+      dados: Util.Msg.sucesso,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao atualizar disponibilidade das variações em lote.`, error);
@@ -743,11 +792,12 @@ const atDisponibilidadeVariacao = async (
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const atEstoque = async (empresaId: number, produtos: { id: string; stock: number }[]): Promise<IRetornoServico<string>> => {
+const atEstoque = async (empresaId: number, produtos: { id: string; stock: number }[]): Promise<IRetorno<string>> => {
   try {
     const apiAxiosMC = await Axios.axiosMeuCarrinho(empresaId);
     if (typeof apiAxiosMC === 'string') {
@@ -755,6 +805,7 @@ const atEstoque = async (empresaId: number, produtos: { id: string; stock: numbe
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -776,8 +827,9 @@ const atEstoque = async (empresaId: number, produtos: { id: string; stock: numbe
 
     return {
       sucesso: true,
-      dados: 'Sucesso!',
+      dados: Util.Msg.sucesso,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao atualizar estoque em lote.`, error);
@@ -787,11 +839,12 @@ const atEstoque = async (empresaId: number, produtos: { id: string; stock: numbe
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const atEstoqueVariacao = async (empresaId: number, variacoes: { variationId: string; id: string; stock: number }[]): Promise<IRetornoServico<string>> => {
+const atEstoqueVariacao = async (empresaId: number, variacoes: { variationId: string; id: string; stock: number }[]): Promise<IRetorno<string>> => {
   function agruparPorVariationId(data: { variationId: string; id: string; stock: number }[], limit: number) {
     const grupos: Record<string, { variationId: string; id: string; stock: number }[]> = {};
 
@@ -820,6 +873,7 @@ const atEstoqueVariacao = async (empresaId: number, variacoes: { variationId: st
         sucesso: false,
         dados: null,
         erro: apiAxiosMC,
+        total: 1,
       };
     }
 
@@ -835,8 +889,9 @@ const atEstoqueVariacao = async (empresaId: number, variacoes: { variationId: st
 
     return {
       sucesso: true,
-      dados: 'Sucesso!',
+      dados: Util.Msg.sucesso,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao atualizar estoque das variações em lote.`, error);
@@ -846,11 +901,12 @@ const atEstoqueVariacao = async (empresaId: number, variacoes: { variationId: st
       sucesso: false,
       dados: null,
       erro: erroTratado,
+      total: 1,
     };
   }
 };
 
-const zerarCadastros = async (empresaId: number, merchantId: string): Promise<IRetornoServico<string>> => {
+const zerarCadastros = async (empresaId: number, merchantId: string): Promise<IRetorno<string>> => {
   try {
     const allCategoriasMc = await getCategorias(empresaId, merchantId);
     if (!allCategoriasMc.sucesso) {
@@ -858,6 +914,7 @@ const zerarCadastros = async (empresaId: number, merchantId: string): Promise<IR
         sucesso: false,
         dados: null,
         erro: allCategoriasMc.erro,
+        total: 1,
       };
     }
 
@@ -869,6 +926,7 @@ const zerarCadastros = async (empresaId: number, merchantId: string): Promise<IR
           sucesso: false,
           dados: null,
           erro: resDeleteCategoriaPorId.erro,
+          total: 1,
         };
       }
     }
@@ -877,6 +935,7 @@ const zerarCadastros = async (empresaId: number, merchantId: string): Promise<IR
       sucesso: true,
       dados: Util.Msg.sucesso,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao zerar cadastros.`, error);
@@ -885,11 +944,12 @@ const zerarCadastros = async (empresaId: number, merchantId: string): Promise<IR
       sucesso: false,
       dados: null,
       erro: Util.Msg.erroInesperado,
+      total: 1,
     };
   }
 };
 
-const alimentarProdutos = async (empresaId: number, merchantId: string): Promise<IRetornoServico<string>> => {
+const alimentarProdutos = async (empresaId: number, merchantId: string): Promise<IRetorno<string>> => {
   try {
     let totalVariacoesEncontradas = 0;
     let totalVariacoesItensEncontrados = 0;
@@ -900,6 +960,7 @@ const alimentarProdutos = async (empresaId: number, merchantId: string): Promise
         sucesso: false,
         dados: null,
         erro: Util.Msg.erroInesperado,
+        total: 1,
       };
     }
 
@@ -910,6 +971,7 @@ const alimentarProdutos = async (empresaId: number, merchantId: string): Promise
         sucesso: false,
         dados: null,
         erro: allCategorias.erro,
+        total: 1,
       };
     }
     Util.Log.info(`${MODULO} | Total de categorias encontradas: ${allCategorias.dados.length}`);
@@ -921,6 +983,7 @@ const alimentarProdutos = async (empresaId: number, merchantId: string): Promise
         sucesso: false,
         dados: null,
         erro: allProdutosMc.erro,
+        total: 1,
       };
     }
     Util.Log.info(`${MODULO} | Total de produtos encontrados: ${allProdutosMc.dados.length}`);
@@ -951,6 +1014,7 @@ const alimentarProdutos = async (empresaId: number, merchantId: string): Promise
           sucesso: false,
           dados: null,
           erro: Util.Msg.erroInesperado,
+          total: 1,
         };
       }
     }
@@ -962,6 +1026,7 @@ const alimentarProdutos = async (empresaId: number, merchantId: string): Promise
         sucesso: false,
         dados: null,
         erro: Util.Msg.erroInesperado,
+        total: 1,
       };
     }
     const categoriasMap = new Map(dbCategorias.map((c) => [c.c_id, c]));
@@ -1001,6 +1066,7 @@ const alimentarProdutos = async (empresaId: number, merchantId: string): Promise
             sucesso: false,
             dados: null,
             erro: Util.Msg.erroInesperado,
+            total: 1,
           };
         }
 
@@ -1012,6 +1078,7 @@ const alimentarProdutos = async (empresaId: number, merchantId: string): Promise
             sucesso: false,
             dados: null,
             erro: productAndVariation.erro,
+            total: 1,
           };
         }
 
@@ -1039,6 +1106,7 @@ const alimentarProdutos = async (empresaId: number, merchantId: string): Promise
                 sucesso: false,
                 dados: null,
                 erro: Util.Msg.erroInesperado,
+                total: 1,
               };
             }
 
@@ -1069,6 +1137,7 @@ const alimentarProdutos = async (empresaId: number, merchantId: string): Promise
                   sucesso: false,
                   dados: null,
                   erro: Util.Msg.erroInesperado,
+                  total: 1,
                 };
               }
             }
@@ -1084,6 +1153,7 @@ const alimentarProdutos = async (empresaId: number, merchantId: string): Promise
       sucesso: true,
       dados: Util.Msg.sucesso,
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error(`${MODULO} | Erro ao alimentar os produtos do Meu Carrinho`, error);
@@ -1092,11 +1162,12 @@ const alimentarProdutos = async (empresaId: number, merchantId: string): Promise
       sucesso: false,
       dados: null,
       erro: Util.Msg.erroInesperado,
+      total: 1,
     };
   }
 };
 
-const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId: string): Promise<IRetornoServico<string>> => {
+const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId: string): Promise<IRetorno<string>> => {
   try {
     // 1.1 Alimentar com os produtos do Meu Carrinho
     const resProdsMc = await alimentarProdutos(empresaId, merchantId);
@@ -1105,6 +1176,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
         sucesso: false,
         dados: null,
         erro: resProdsMc.erro,
+        total: 1,
       };
     }
 
@@ -1115,6 +1187,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
         sucesso: false,
         dados: null,
         erro: resProdsERP.erro,
+        total: 1,
       };
     }
 
@@ -1130,6 +1203,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
         sucesso: false,
         dados: null,
         erro: Util.Msg.erroInesperado,
+        total: 1,
       };
     }
 
@@ -1160,6 +1234,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
               sucesso: false,
               dados: null,
               erro: resCriarCategoria.erro,
+              total: 1,
             };
           }
 
@@ -1169,6 +1244,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
               sucesso: false,
               dados: null,
               erro: resAtDisponibilidadeCategoria.erro,
+              total: 1,
             };
           }
 
@@ -1187,6 +1263,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
               sucesso: false,
               dados: null,
               erro: Util.Msg.erroInesperado,
+              total: 1,
             };
           }
         } else {
@@ -1194,6 +1271,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
             sucesso: false,
             dados: null,
             erro: `Categoria não cadastrada por falta de informação: ${JSON.stringify(modeloCategoria)}`,
+            total: 1,
           };
         }
       }
@@ -1215,6 +1293,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
             sucesso: false,
             dados: null,
             erro: `Categoria não encontrada no banco(categoriaId): ${p.erp_p_name}`,
+            total: 1,
           };
         }
 
@@ -1236,6 +1315,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
               sucesso: false,
               dados: null,
               erro: resCriarProduto.erro,
+              total: 1,
             };
           }
 
@@ -1245,6 +1325,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
               sucesso: false,
               dados: null,
               erro: resAtDisponibilidadeProduto.erro,
+              total: 1,
             };
           }
 
@@ -1257,6 +1338,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
                   sucesso: false,
                   dados: null,
                   erro: resAddImgPorUrl.erro,
+                  total: 1,
                 };
               }
             }
@@ -1287,6 +1369,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
               sucesso: false,
               dados: null,
               erro: Util.Msg.erroInesperado,
+              total: 1,
             };
           }
         } else {
@@ -1294,6 +1377,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
             sucesso: false,
             dados: null,
             erro: `Produto não cadastrada por falta de informação: ${JSON.stringify(modeloProduto)}`,
+            total: 1,
           };
         }
       }
@@ -1317,6 +1401,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
             sucesso: false,
             dados: null,
             erro: `Produto principal não foi encontrado no banco: ${Util.Texto.truncarTexto(v.erp_v_name, 100) || ''}`,
+            total: 1,
           };
         }
 
@@ -1334,6 +1419,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
               sucesso: false,
               dados: null,
               erro: resCriarVariacaoCabecalho.erro,
+              total: 1,
             };
           }
 
@@ -1348,6 +1434,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
               sucesso: false,
               dados: null,
               erro: resAtOrdenarVariacaoCabecalho.erro,
+              total: 1,
             };
           }
 
@@ -1384,6 +1471,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
               sucesso: false,
               dados: null,
               erro: Util.Msg.erroInesperado,
+              total: 1,
             };
           }
         } else {
@@ -1391,6 +1479,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
             sucesso: false,
             dados: null,
             erro: `Cabeçalho da variação não cadastrada por falta de informação: ${JSON.stringify(modeloVariacaoCabecalho)}`,
+            total: 1,
           };
         }
       }
@@ -1419,6 +1508,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
             sucesso: false,
             dados: null,
             erro: `Variação cabeçalho não foi entrada no banco(variacaoCabecalhoId): ${vi.erp_v_name}`,
+            total: 1,
           };
         }
 
@@ -1436,6 +1526,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
               sucesso: false,
               dados: null,
               erro: resCriarVariacaoItem.erro,
+              total: 1,
             };
           }
 
@@ -1450,6 +1541,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
               sucesso: false,
               dados: null,
               erro: resAtDisponibilidadeVariacaoItem.erro,
+              total: 1,
             };
           }
         } else {
@@ -1457,6 +1549,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
             sucesso: false,
             dados: null,
             erro: `Item da variação não cadastrada por falta de informação: ${JSON.stringify(modeloVariacaoItem)}`,
+            total: 1,
           };
         }
       }
@@ -1466,6 +1559,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
       sucesso: true,
       dados: 'Exportação finalizada com sucesso.',
       erro: null,
+      total: 1,
     };
   } catch (error) {
     Util.Log.error('[ERP → MC] Erro ao exportar mercadorias', error);
@@ -1473,6 +1567,7 @@ const exportarMercadoriasParaMeuCarrinho = async (empresaId: number, merchantId:
       sucesso: false,
       dados: null,
       erro: Util.Msg.erroInesperado,
+      total: 1,
     };
   }
 };
