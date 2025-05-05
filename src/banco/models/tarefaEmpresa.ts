@@ -1,4 +1,4 @@
-export interface ITarefaHistorico {
+export interface ITarefaEmpresa {
   id: number;
 
   tarefa_id: number;

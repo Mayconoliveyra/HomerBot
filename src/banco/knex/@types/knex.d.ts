@@ -14,6 +14,7 @@ declare module 'knex/types/tables' {
     produtos_erp: IProdutoERP;
     tarefas: ITarefa;
     vw_tarefas_empresas: IVwTarefaEmpresa;
+    vw_tarefas_historico: IVwTarefaEmpresa;
     vw_tarefas_simultaneas: IVwTarefaProcessar;
     vw_tarefas_nao_simultaneas: IVwTarefaProcessar;
   }

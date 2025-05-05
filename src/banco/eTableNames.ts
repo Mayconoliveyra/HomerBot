@@ -8,4 +8,5 @@ export enum ETableNames {
   vw_tarefas_empresas = 'vw_tarefas_empresas',
   vw_tarefas_simultaneas = 'vw_tarefas_simultaneas',
   vw_tarefas_nao_simultaneas = 'vw_tarefas_nao_simultaneas',
+  vw_tarefas_historico = 'vw_tarefas_historico',
 }

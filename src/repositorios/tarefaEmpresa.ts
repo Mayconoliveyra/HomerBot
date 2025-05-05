@@ -1,13 +1,13 @@
 import { ETableNames } from '../banco/eTableNames';
 import { Knex } from '../banco/knex';
-import { ITarefaHistorico } from '../banco/models/tarefaEmpresa';
+import { ITarefaEmpresa } from '../banco/models/tarefaEmpresa';
 
 import { Util } from '../util';
 import { IFiltro, IRetorno } from '../util/tipagens';
 
 const MODULO = '[TarefaEmpresa]';
 
-const solicitar = async (dados: Partial<ITarefaHistorico>): Promise<IRetorno<string>> => {
+const solicitar = async (dados: Partial<ITarefaEmpresa>): Promise<IRetorno<string>> => {
   try {
     const result = await Knex(ETableNames.tarefa_empresa).insert(dados);
 
@@ -38,7 +38,7 @@ const solicitar = async (dados: Partial<ITarefaHistorico>): Promise<IRetorno<str
   }
 };
 
-const consultarPrimeiroRegistro = async (filtros: IFiltro<ITarefaHistorico>[]): Promise<IRetorno<ITarefaHistorico>> => {
+const consultarPrimeiroRegistro = async (filtros: IFiltro<ITarefaEmpresa>[]): Promise<IRetorno<ITarefaEmpresa>> => {
   try {
     const query = Knex.table(ETableNames.tarefa_empresa).select('*').orderBy('id', 'desc');
 
@@ -75,7 +75,7 @@ const consultarPrimeiroRegistro = async (filtros: IFiltro<ITarefaHistorico>[]): 
   }
 };
 
-const atualizarDados = async (id: number, dados: Partial<ITarefaHistorico>): Promise<IRetorno<string>> => {
+const atualizarDados = async (id: number, dados: Partial<ITarefaEmpresa>): Promise<IRetorno<string>> => {
   try {
     delete dados.id;
     delete dados.tarefa_id;
