@@ -53,7 +53,6 @@ const consultarValidacao = Middlewares.validacao((getSchema) => ({
     }),
   ),
 }));
-
 const solicitarValidacao = Middlewares.validacao((getSchema) => ({
   body: getSchema<IBodySolicitarProps>(
     yup.object().shape({
@@ -82,6 +81,18 @@ const cancelarValidacao = Middlewares.validacao((getSchema) => ({
   params: getSchema<{ tarefaId: number }>(
     yup.object().shape({
       tarefaId: yup.number().integer().required(),
+    }),
+  ),
+}));
+const historicoValidacao = Middlewares.validacao((getSchema) => ({
+  query: getSchema<IQueryProps>(
+    yup.object().shape({
+      empresaId: yup.number().integer().moreThan(0).required(),
+      pagina: yup.number().integer().moreThan(0).default(1),
+      limite: yup.number().integer().moreThan(0).max(500).default(10),
+      filtro: yup.string().max(255).optional(),
+      ordenarPor: yup.string().max(100).optional().default('te_id'),
+      ordem: yup.string().max(100).optional().default('desc'),
     }),
   ),
 }));
@@ -188,11 +199,38 @@ const cancelar = async (req: Request<{ tarefaId: string }>, res: Response) => {
   return res.status(StatusCodes.NO_CONTENT).send();
 };
 
+const historico = async (req: Request<{}, {}, {}, IQueryProps>, res: Response) => {
+  const { empresaId, pagina = 1, limite = 10, filtro = '', ordenarPor = 'te_id', ordem = 'desc' } = req.query;
+
+  const empresa = await Repositorios.Empresa.consultarPrimeiroRegistro([{ coluna: 'id', operador: '=', valor: empresaId as number }]);
+  if (!empresa.sucesso) {
+    return res.status(StatusCodes.NOT_FOUND).json({ errors: { default: 'Empresa não encontrada.' } });
+  }
+
+  const result = await Repositorios.Tarefa.historico(empresaId as number, pagina, limite, filtro, ordenarPor, ordem);
+
+  if (!result.sucesso) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      errors: { default: result.erro },
+    });
+  }
+
+  const totalPaginas = Math.ceil(result.total / limite);
+
+  return res.status(StatusCodes.OK).json({
+    dados: result.dados,
+    totalRegistros: result.total,
+    totalPaginas: totalPaginas,
+  });
+};
+
 export const Tarefa = {
   consultarValidacao,
   solicitarValidacao,
   cancelarValidacao,
+  historicoValidacao,
   consultar,
   solicitar,
   cancelar,
+  historico,
 };

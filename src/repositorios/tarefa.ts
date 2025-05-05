@@ -178,4 +178,67 @@ const atualizarDados = async (empresaId: number, data: Partial<ITarefa>): Promis
   }
 };
 
-export const Tarefa = { cadastrar, consultar, consultarPrimeiroRegistro, atualizarDados };
+const historico = async (
+  empresaId: number,
+  pagina: number,
+  limite: number,
+  filtro: string,
+  ordenarPor: string,
+  ordem: string,
+): Promise<IRetorno<IVwTarefaEmpresa[]>> => {
+  try {
+    const offset = (pagina - 1) * limite;
+
+    // Valida se a coluna existe de fato na tabela
+    const colunaOrdem = ordem && ordem.toLowerCase() === 'asc' ? 'asc' : 'desc';
+
+    const colunasTabela = await Knex(ETableNames.vw_tarefas_historico).columnInfo();
+    const nomesColunas = Object.keys(colunasTabela);
+    const colunaOrdenada = nomesColunas.includes(ordenarPor) ? ordenarPor : 'te_id';
+
+    // Dados
+    const tarefas = (await Knex(ETableNames.vw_tarefas_historico)
+      .select('*')
+      .where('e_id', '=', empresaId)
+      .modify((queryBuilder) => {
+        if (filtro) {
+          queryBuilder.where((qb) => {
+            qb.where('t_nome', 'like', `%${filtro}%`).orWhere('t_descricao', 'like', `%${filtro}%`);
+          });
+        }
+      })
+      .orderBy(colunaOrdenada, colunaOrdem)
+      .limit(limite)
+      .offset(offset)) as IVwTarefaEmpresa[];
+
+    // Total registros
+    const countResult = await Knex(ETableNames.vw_tarefas_historico)
+      .where('e_id', '=', empresaId)
+      .modify((queryBuilder) => {
+        if (filtro) {
+          queryBuilder.where((qb) => {
+            qb.where('t_nome', 'like', `%${filtro}%`).orWhere('t_descricao', 'like', `%${filtro}%`);
+          });
+        }
+      })
+      .count('t_id as count');
+
+    return {
+      sucesso: true,
+      dados: tarefas,
+      erro: null,
+      total: Number(countResult[0]?.count || 0),
+    };
+  } catch (error) {
+    Util.Log.error(`${MODULO} | Erro ao consultar histórico.`, error);
+
+    return {
+      sucesso: false,
+      dados: null,
+      erro: Util.Msg.erroInesperado,
+      total: 0,
+    };
+  }
+};
+
+export const Tarefa = { cadastrar, consultar, consultarPrimeiroRegistro, atualizarDados, historico };
